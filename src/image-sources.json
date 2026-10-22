@@ -1,0 +1,62 @@
+[
+  {
+    "species": "Rainbow_lorikeet",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/ad/Rainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg/960px-Rainbow_lorikeet_%28Trichoglossus_moluccanus_moluccanus%29_Sydney.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "file": "Rainbow_lorikeet_(Trichoglossus_moluccanus_moluccanus)_Sydney.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Rainbow_lorikeet_(Trichoglossus_moluccanus_moluccanus)_Sydney.jpg",
+    "author": "Charles J. Sharp",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "credit": "Own work, from Sharp Photography, sharpphotography.co.uk"
+  },
+  {
+    "species": "Superb_fairywren",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/54/Malurus_cyaneus_cyanochlamys_.jpg/960px-Malurus_cyaneus_cyanochlamys_.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "file": "Malurus_cyaneus_cyanochlamys_.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Malurus_cyaneus_cyanochlamys_.jpg",
+    "author": "JJ Harrison (https://www.jjharrison.com.au/)",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "credit": "Own work"
+  },
+  {
+    "species": "Acacia_pycnantha",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/9b/Acacia_pycnantha_Golden_Wattle.jpg/960px-Acacia_pycnantha_Golden_Wattle.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "file": "Acacia_pycnantha_Golden_Wattle.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Acacia_pycnantha_Golden_Wattle.jpg",
+    "author": "Melburnian",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+    "credit": "Own work"
+  },
+  {
+    "species": "Amegilla_cingulata",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fc/Amegilla_cingulata_4.jpg/960px-Amegilla_cingulata_4.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "file": "Amegilla_cingulata_4.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Amegilla_cingulata_4.jpg",
+    "author": "James Niland from Brisbane, Australia",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "credit": "Blue banded bee #2"
+  },
+  {
+    "species": "Laughing_kookaburra",
+    "image": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/71/Laughing_Kookaburra_1.jpg/960px-Laughing_Kookaburra_1.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "file": "Laughing_Kookaburra_1.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Laughing_Kookaburra_1.jpg",
+    "author": "Photo by: Paulweberphoto - paulweberphoto.com",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "credit": "Own work"
+  },
+  {
+    "species": "Eucalyptus_globulus",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/42/Eucalyptus_globulus_subsp._maidenii.jpg?utm_source=en.wikipedia.org&utm_campaign=api&utm_content=thumbnail_unscaled",
+    "file": "Eucalyptus_globulus_subsp._maidenii.jpg",
+    "source": "https://commons.wikimedia.org/wiki/File:Eucalyptus_globulus_subsp._maidenii.jpg",
+    "author": "Ian Brooker and David Kleinig",
+    "license": "CC BY 3.0 au",
+    "licenseUrl": "https://creativecommons.org/licenses/by/3.0/au/deed.en",
+    "credit": "https://biocache.ala.org.au/occurrences/11bb683d-b876-4ccd-8afc-8c5f7d4a6ac3"
+  }
+]

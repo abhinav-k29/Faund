@@ -1,0 +1,109 @@
+# Nature Discovery
+
+A working mobile-first biodiversity discovery and research prototype. **Nature Discovery is a development placeholder**, not a final startup name. Change `src/config.ts` to rename the UI and PWA manifest.
+
+The core journey is **Explore → Photograph / demo sample → Identify → Record → Learn → Collect → Research dataset**. Six Australian species, original SVG companions, collectible cards, tasks, XP, achievements, an illustrated ecosystem and a connected researcher demonstration are included.
+
+## Run
+
+Use Node 22.12+ (or Node 20.19+), npm, and a modern browser.
+
+```powershell
+npm install
+npm run dev -- --port 5173
+```
+
+Open http://localhost:5173/. The dev server binds to all interfaces. No API keys, account, database or paid service is needed. Complete the participation agreement using the adult demonstration profile. In Profile, choose **Load Demo Explorer** for populated sample records. This requires prior affirmative consent.
+
+## Phone access
+
+1. Keep the server running and connect the iPhone and computer to the same Wi-Fi.
+2. Run `ipconfig` on the computer and find the IPv4 address for the Wi-Fi adapter.
+3. Open `http://<computer-ip>:5173/` in Safari. At verification the Wi-Fi address was `10.4.96.65`, so the address was http://10.4.96.65:5173/. IP addresses can change.
+4. If it cannot connect, check the private-network firewall rule and whether the network isolates clients. Do not disable the firewall. A personal hotspot can be a useful alternative.
+
+Ordinary LAN HTTP supports the demo selector and file/photo input. Live `getUserMedia` and device geolocation generally require HTTPS (localhost is a special exception). Browser photo capture support varies by device. No camera access is needed for a presentation.
+
+## PWA and deployment
+
+```powershell
+npm run build
+npm run preview -- --port 4173
+```
+
+`dist/` is a static production build, with a generated web manifest, service worker, 192/512 PNG icons, Apple touch icon, standalone display settings and safe-area CSS. App shell, downloaded photographs and local fonts are precached. Offline use requires a successful first visit to the production build. The development server does not enable the service worker.
+
+Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Vercel, with all client routes falling back to `/index.html`. A `_redirects` file is provided for compatible hosts. No server secrets or backend configuration are needed. Then open the HTTPS address in iPhone Safari, tap Share → **Add to Home Screen**, and launch the icon. iOS system UI may remain visible. The site has not been published to an external host in this task.
+
+## Demonstration routes
+
+| Route              | Purpose                                                   |
+| ------------------ | --------------------------------------------------------- |
+| `/`                | Welcome and quick tour                                    |
+| `/consent`         | Required adult participation agreement                    |
+| `/home`            | Discovery action, ecosystem and contribution summary      |
+| `/scan`            | Camera, photo input, six demo samples                     |
+| `/identify/0`      | Suggested identification, alternatives and uncertainty    |
+| `/record/0`        | Structured observation form                               |
+| `/card/0`          | Real species / companion 3D card                          |
+| `/collection`      | Searchable private species and character collection       |
+| `/ecosystem`       | Interactive illustrated habitat                           |
+| `/tasks`           | Research and exploration tasks                            |
+| `/contributions`   | Observation details, corrections and deletion             |
+| `/sites`           | Repeat visits, timelines and concept comparison slider    |
+| `/profile`         | Achievements, consent review/withdrawal and demo controls |
+| `/researcher-demo` | Dataset, filters, charts, review, CSV, editable tasks     |
+| `/showcase`        | Seven presentation compositions                           |
+
+Species IDs are 0–5. Browsing a field-guide card does not add an observation.
+
+For a two-minute pitch: accept consent → Profile / Load Demo Explorer → Home / discovery → choose Superb Fairywren → confirm → record a named site → save → companion reveal → flip card → add to ecosystem → contributions → researcher dashboard. Show that the new record is present, inspect its consent provenance, change a demo review status and export CSV. Research Tasks can be edited in the dashboard; Published tasks are displayed in the mobile app and submissions retain their task IDs.
+
+## Data and consent
+
+The local repository (`src/store.ts`) separates consent, scientific observations, sites, task protocols and game progress. Saved observations reference a versioned consent record, contributor pseudonym, identification status, review status, provenance and observation method. The most recent consent decision controls participation. Withdrawal blocks future participation. Previous records remain locally accessible for correction/deletion through the researcher demonstration; this illustrates retention, not production legal policy.
+
+Every saved observation enters both private history and the local authorised research dataset under the agreement. There is no second optional sharing switch. The researcher route is a **demonstration role**, accessible without real authentication; it is not a secure access-control boundary. Local storage is not encrypted. Use sample data, not confidential field observations.
+
+Photos are resized and re-encoded through canvas, removing source EXIF. They are saved locally in browser storage with records. Inputs are limited to 15 MB and resized to 1200 px; browser storage capacity remains limited (commonly a few MB). Quota failures are reported before advancing the save flow. A production repository should move photos to IndexedDB / secure object storage. No photos or geolocation are sent to an external service. Device location is requested only by an explicit one-time action. Exports omit exact coordinates entirely and withhold sensitive localities. Sensitive photos and free-text notes are withheld from the demo researcher detail view. Free text must not contain personal or confidential data.
+
+CSV uses concepts such as occurrenceID, eventDate, scientificName, coordinateUncertaintyInMeters, samplingProtocol and basisOfRecord. Only positive sightings are recorded; the app does not misrepresent non-detections as species occurrences. No GeoJSON export is implemented.
+
+## Functional and simulated features
+
+Functional: navigation, consent gates and withdrawal, camera integration and fallback, local photo processing, structured recording, duplicate sightings, uncertain records, collection, flip/reveal, XP, one-time task rewards, three visual companion stages, ecosystem, site timeline, task editing/publication, record review/correction/deletion, filters, charts, CSV and reset.
+
+Simulated: identification (selected example, never image classification), researcher identity/permissions, expert review, research transmission, scientific project activity and vegetation-change interpretation. The comparison slider uses clearly labelled artwork rather than actual before/after field photographs. No authentication, backend, live nearby species, research integration or legal certification exists. Guardian consent is a concept only and minors cannot activate participation. No conservation outcomes or research partnerships are asserted.
+
+For a clean start choose Profile → **Fresh Explorer · Reset Demo**. This removes this app’s local observations, photos, consent and game state. **Load Demo Explorer** replaces progress with labelled sample records while preserving consent.
+
+## Verification and screenshots
+
+With the dev server running:
+
+```powershell
+npx playwright install chromium
+npm run test:journey
+```
+
+The scripted browser journey checks consent/decline/withdrawal, recording, uncertainty, duplicates, collection persistence, card flipping, ecosystem changes, linked research data, review/filter/CSV, editable task publication, one-time reward protection, repeat timelines and reset. It checks overflow at 375×812, 390×844, 430×932 and 1440×900 and captures actual screenshots into `presentation-assets/`.
+
+`tests/pwa.mjs` tests the production build’s manifest, service worker and offline reload when a preview server runs at port 4173. These automated checks use desktop Chromium. Physical iPhone Safari, actual device camera permissions, geolocation and Home Screen installation still need manual device verification. See `docs/VERIFICATION.md` for the recorded results.
+
+## Source organisation
+
+- `src/config.ts`: replaceable label, storage key, consent version and demo pseudonym.
+- `src/store.ts`: types, local repository, consent enforcement, demo seeding, task progress and CSV projection.
+- `src/data.ts`: six educational species records and source links.
+- `src/Art.tsx`: original vector characters and landscape.
+- `src/participation.tsx`: welcome, consent and profile.
+- `src/discovery.tsx`: capture, identification, recording, collectible and observation detail flows.
+- `src/pages.tsx`: home, explore, collection, ecosystem, tasks, sites.
+- `src/research.tsx`: researcher dashboard and showcase.
+- `src/ui.tsx`, `src/style.css`: shared UI and central design tokens.
+
+React, TypeScript, Vite, React Router, Lucide, Motion, plain token-based CSS, vite-plugin-pwa and Playwright. Font and photo assets are bundled locally; attribution is in `IMAGE_CREDITS.md` and `/credits`. Outfit and Fraunces use the SIL Open Font License.
+
+## Next development steps
+
+Production priorities are study governance and protocols, verified researcher authentication and permissions, secure backend repositories, protected photo storage, consent/retention handling, guardian pathways, identification review, validated geospatial records and accessible device testing. Later integrations could include Atlas of Living Australia or GBIF; none is connected here. More species, educational quizzes, habitat learning progress and task-specific survey/event models would extend the prototype. See `docs/PRODUCT_OVERVIEW.md` for proposal-ready context.
