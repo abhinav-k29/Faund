@@ -2,6 +2,8 @@
 
 Nature Discovery is a temporary development label for a proposed biodiversity discovery and research platform. Branding is not final. The prototype connects an enjoyable mobile nature experience with structured observation records and a demonstration researcher workspace.
 
+The upgraded local prototype preserves its original interface and adds a private geographic observation map, six volumetric 3D companions, three interactive biomes and a curated fictional Community gallery. Tasks remain prominent on Home and connect to a project/task builder in the researcher workspace. Published protocols produce consent-linked observations with project and site associations, effort, uncertainty and review status; repeat-site summaries and example dataset exports use those same records. Community previews contain only fictional game assets, independently of the scientific dataset.
+
 Community interest in nature does not automatically produce useful ecological evidence. Research depends on observation context, identification uncertainty, location precision, effort, appropriate consent, and review. This concept aims to make those distinctions understandable while encouraging continued learning and responsible participation.
 
 The project team's preliminary survey had 26 respondents, mostly students: 23 reported photographing nature in the preceding three months, while two reported formally recording an observation. This is exploratory input, not representative market validation. Five selected research contribution as a motivating feature; that question did not measure willingness to consent to research-data sharing.

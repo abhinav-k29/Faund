@@ -3228,4 +3228,32 @@ td .icon-button {
   min-height: 30px;
 }
 /* Larger hit areas and readable field notes on phones. */
-.chips button{min-height:44px}.tile-copy .eyebrow{font-size:9px}.tile-copy small{font-size:10px}.card-facts strong{font-size:12px}.card-body>.card-description{font-size:12px}.privacy-line{font-size:10px}.recent .eyebrow{font-size:8px}.table-scroll .icon-button{width:44px;min-width:44px;height:44px}.logo>span{overflow:hidden}
+.chips button {
+  min-height: 44px;
+}
+.tile-copy .eyebrow {
+  font-size: 9px;
+}
+.tile-copy small {
+  font-size: 10px;
+}
+.card-facts strong {
+  font-size: 12px;
+}
+.card-body > .card-description {
+  font-size: 12px;
+}
+.privacy-line {
+  font-size: 10px;
+}
+.recent .eyebrow {
+  font-size: 8px;
+}
+.table-scroll .icon-button {
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+}
+.logo > span {
+  overflow: hidden;
+}

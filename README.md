@@ -2,11 +2,13 @@
 
 A working mobile-first biodiversity discovery and research prototype. **Nature Discovery is a development placeholder**, not a final startup name. Change `src/config.ts` to rename the UI and PWA manifest.
 
-The core journey is **Explore → Photograph / demo sample → Identify → Record → Learn → Collect → Research dataset**. Six Australian species, original SVG companions, collectible cards, tasks, XP, achievements, an illustrated ecosystem and a connected researcher demonstration are included.
+The core journey is **Explore → Photograph / demo sample → Identify → Record → Learn → Collect → Research dataset**. The existing design and scientific workflow are preserved. The upgrade adds a private observation map, premium card previews, six original volumetric 3D companions, three interactive biomes, fictional Community Worlds and research project/task building.
+
+The five navigation items are **Home | Map | Scan | Collection | Explore**. **Tasks** has prominent Home shortcuts and a link in Explore; it remains a core research feature. The previous species/habitat browser is preserved at **`/field-guide`**. **`/ecosystem`** opens the upgraded My World experience.
 
 ## Run
 
-Use Node 22.12+ (or Node 20.19+), npm, and a modern browser.
+Use Node 22.12+, npm, and a modern browser.
 
 ```powershell
 npm install
@@ -42,22 +44,29 @@ Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Verc
 | `/`                | Welcome and quick tour                                    |
 | `/consent`         | Required adult participation agreement                    |
 | `/home`            | Discovery action, ecosystem and contribution summary      |
+| `/map`             | Private geographic observation map, filters and date-grouped list |
+| `/field-guide`     | Preserved species and habitat browser |
+| `/character/3`     | Rotate, zoom, reset, preview evolution and feed Bumbloom |
+| `/explore`         | Meadow, Woodland and Misty Grove; My World / Community |
+| `/community/whisperwood` | A curated fictional public-world preview |
 | `/scan`            | Camera, photo input, six demo samples                     |
 | `/identify/0`      | Suggested identification, alternatives and uncertainty    |
 | `/record/0`        | Structured observation form                               |
 | `/card/0`          | Real species / companion 3D card                          |
 | `/collection`      | Searchable private species and character collection       |
-| `/ecosystem`       | Interactive illustrated habitat                           |
+| `/ecosystem`       | Preserved direct entry to Explore → My World |
 | `/tasks`           | Research and exploration tasks                            |
 | `/contributions`   | Observation details, corrections and deletion             |
 | `/sites`           | Repeat visits, timelines and concept comparison slider    |
 | `/profile`         | Achievements, consent review/withdrawal and demo controls |
-| `/researcher-demo` | Dataset, filters, charts, review, CSV, editable tasks     |
-| `/showcase`        | Seven presentation compositions                           |
+| `/researcher-demo` | Dataset, filters, charts, review, CSV, projects/task builder and site monitoring |
+| `/showcase`        | Existing compositions plus Map, 3D Character, Worlds, Community and Projects |
 
 Species IDs are 0–5. Browsing a field-guide card does not add an observation.
 
-For a two-minute pitch: accept consent → Profile / Load Demo Explorer → Home / discovery → choose Superb Fairywren → confirm → record a named site → save → companion reveal → flip card → add to ecosystem → contributions → researcher dashboard. Show that the new record is present, inspect its consent provenance, change a demo review status and export CSV. Research Tasks can be edited in the dashboard; Published tasks are displayed in the mobile app and submissions retain their task IDs.
+For a short pitch: accept consent → Profile / Load Demo Explorer → Map / select a place → Scan / Analyse Bee Sample → confirm → record → Collection / flip the bee card → Inspect Bumbloom in 3D → Explore / Meadow → feed Growth XP → Community / inspect a fictional world → Home / Tasks → researcher dashboard / Research Projects. Demo mode now contains **18 explicitly fictional observations at six plausible Sydney public areas**, with repeat visits, all six species, varied dates, methods, uncertainties and review states. It includes six companions, separate Growth XP and populated biomes. A previously collected species creates another sighting rather than a first-time unlock; use Fresh Explorer to demonstrate the initial reveal.
+
+In **Research Projects**, create a project and publish a task with a question, target category, protocol, region, effort, safety instructions, notes/site requirements and number of distinct visits. Open it in mobile Tasks and record the required observations. They retain project/task/site/consent links. Repeat-task progress counts distinct observation timestamps at the same named site. Inspect linked records, use species/date/identification-uncertainty filters, and open **Site Monitoring**. **Export CSV** downloads the current view; **Example Dataset** exports only seeded demonstration records in that view.
 
 ## Data and consent
 
@@ -68,6 +77,16 @@ Every saved observation enters both private history and the local authorised res
 Photos are resized and re-encoded through canvas, removing source EXIF. They are saved locally in browser storage with records. Inputs are limited to 15 MB and resized to 1200 px; browser storage capacity remains limited (commonly a few MB). Quota failures are reported before advancing the save flow. A production repository should move photos to IndexedDB / secure object storage. No photos or geolocation are sent to an external service. Device location is requested only by an explicit one-time action. Exports omit exact coordinates entirely and withhold sensitive localities. Sensitive photos and free-text notes are withheld from the demo researcher detail view. Free text must not contain personal or confidential data.
 
 CSV uses concepts such as occurrenceID, eventDate, scientificName, coordinateUncertaintyInMeters, samplingProtocol and basisOfRecord. Only positive sightings are recorded; the app does not misrepresent non-detections as species occurrences. No GeoJSON export is implemented.
+
+## Map, 3D and game-data boundaries
+
+The Leaflet map derives every pin and list entry from actual local observation records, grouping repeat sites. Records without coordinates remain in List; coordinates are never invented from a location description. A local geographically anchored Sydney schematic works offline and is labelled **not for navigation**. Optional OpenStreetMap street tiles require an explicit action and internet access, display attribution, and reveal the viewed tile area to the tile provider. No observation payload is sent. External tiles are disabled while sensitive records are in the filtered view. No analytics or background tracking is enabled.
+
+The six companions are **real procedural 3D geometry**, not images on planes: Pipwing, Bumbloom, Wattlet, Bramblewisp, Chuckleroot and Mistleaf. The renderer is lazy-loaded React Three Fiber / Three.js with Drei orbit controls. Geometry is reusable across the viewer and biomes; no GLB files or remote model service is needed. Pixel ratio is capped at 1.5; rendering pauses offscreen/in background, and idle movement respects reduced motion. The original SVG art is retained as a clearly labelled fallback when WebGL2 is unavailable. Add `?fallback=1` to a character page to demonstrate it.
+
+Lifetime Explorer XP stays in the existing `xp` field. Spendable `game.availableGrowthXP` and per-character growth are separate. Feeding costs ten Growth XP, cannot overdraw, never lowers Explorer level, and never changes scientific records or review state. Stage selectors preview fictional evolution without granting ownership or growth. Existing browser data uses the **same storage key**, with migration defaults preserving consent, observations, completed tasks and XP.
+
+Community Worlds are three curated fictional examples. Their explicit public-game type has no location, observation photograph, date, consent or research fields. Public scenes accept only character IDs/stages and a biome. They cannot display private scientific records. Appreciations are saved locally; viewing a guest companion does not unlock it. There is no real publishing, social account system or exchange/trading implementation.
 
 ## Functional and simulated features
 
@@ -84,9 +103,14 @@ With the dev server running:
 ```powershell
 npx playwright install chromium
 npm run test:journey
+npm run test:quality
+npm run test:upgrades
+npm run test:responsive
 ```
 
-The scripted browser journey checks consent/decline/withdrawal, recording, uncertainty, duplicates, collection persistence, card flipping, ecosystem changes, linked research data, review/filter/CSV, editable task publication, one-time reward protection, repeat timelines and reset. It checks overflow at 375×812, 390×844, 430×932 and 1440×900 and captures actual screenshots into `presentation-assets/`.
+The original scientific-flow journey and camera/privacy quality tests remain. The upgrade suite additionally checks migration, map/list/filter consistency, all six rendered 3D models, drag/reset, evolution previews, feeding persistence and data isolation, biomes, fictional Community boundaries, project/task publication, linked repeated observations and example exports. Layout checks cover 375×812, 390×844, 430×932 and 1440×900. The core journey uses the SVG fallback to stay independent of GPU availability; the upgrade suite tests actual WebGL separately, then closes that browser before its research-data phase. Run suites sequentially on memory-constrained machines.
+
+New actual screenshots **14–23** are in `presentation-assets/`, covering the map, bee scanner, card faces, 3D viewer, Meadow, Community, collection, project builder and monitoring. Earlier assets remain available. The source checkpoint before this upgrade is **`checkpoints/before-worlds-upgrade.zip`**; it excludes `node_modules` and `.npm-cache`.
 
 `tests/pwa.mjs` tests the production build’s manifest, service worker and offline reload when a preview server runs at port 4173. These automated checks use desktop Chromium. Physical iPhone Safari, actual device camera permissions, geolocation and Home Screen installation still need manual device verification. See `docs/VERIFICATION.md` for the recorded results.
 
@@ -100,9 +124,15 @@ The scripted browser journey checks consent/decline/withdrawal, recording, uncer
 - `src/discovery.tsx`: capture, identification, recording, collectible and observation detail flows.
 - `src/pages.tsx`: home, explore, collection, ecosystem, tasks, sites.
 - `src/research.tsx`: researcher dashboard and showcase.
+- `src/research-projects.tsx`: project/task builder and research site monitoring.
+- `src/observation-map.tsx`, `public/sydney-map.svg`: private Leaflet map and offline schematic.
+- `src/scene.tsx`, `src/scene-canvas.tsx`: lazy renderer, six procedural models, habitats, camera and fallback.
+- `src/worlds.tsx`, `src/community-data.ts`: personal progression and isolated fictional public worlds.
+- `src/scan-analysis.tsx`: clearly scripted identification stages.
+- `src/upgrades.css`: additions to the existing design system.
 - `src/ui.tsx`, `src/style.css`: shared UI and central design tokens.
 
-React, TypeScript, Vite, React Router, Lucide, Motion, plain token-based CSS, vite-plugin-pwa and Playwright. Font and photo assets are bundled locally; attribution is in `IMAGE_CREDITS.md` and `/credits`. Outfit and Fraunces use the SIL Open Font License.
+React, TypeScript, Vite, React Router, Lucide, Motion, Three.js, React Three Fiber, Drei, Leaflet, plain token-based CSS, vite-plugin-pwa and Playwright. Font and photo assets are bundled locally; attribution is in `IMAGE_CREDITS.md` and `/credits`. Outfit and Fraunces use the SIL Open Font License. See `docs/UPGRADE_NOTES.md` for the file-by-file upgrade record.
 
 ## Next development steps
 

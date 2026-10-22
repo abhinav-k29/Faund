@@ -4,7 +4,7 @@ Verified on 22 October 2026 using Windows, Node 23.5.0 and Playwright Chromium 1
 
 ## Passed
 
-- TypeScript checking and production build (`npm run build`). Generated PWA shell and bundled local photographs/fonts; precache approximately 1.64 MiB.
+- TypeScript checking and production build (`npm run build`). Generated PWA shell, lazy map/3D modules and bundled photographs/fonts; precache approximately 2.8 MiB. The optional 3D renderer is about 250 KiB gzipped and loads on first use.
 - Consent required for all observation-app routes; unchecked affirmative controls; adult demonstration affirmation; decline prevents entry; timestamp/version/scope persist; withdrawal stops participation; a later declined decision supersedes earlier agreement.
 - Sample scanner → suggested identification → observation → companion reveal → card flip → collection → ecosystem.
 - Duplicate sightings preserve separate records while deduplicating species. Unknown species can be recorded with a provisional category.
@@ -18,6 +18,12 @@ Verified on 22 October 2026 using Windows, Node 23.5.0 and Playwright Chromium 1
 - Reduced-motion browser journey and no runtime page errors.
 - Production manifest, 192/512 PNG icons, controlling service worker, offline reload and cached species photograph.
 - Actual PNG presentation screenshots generated in `presentation-assets/`; selected mobile, card showcase and research-dashboard captures visually inspected.
+- Unchanged storage key and legacy consent/record/XP preservation; 18 consistent fictional observations; six grouped geographic places; map/list/search/date filters and observation/site navigation.
+- Six actual WebGL companion models render, rotate and reset; character switching, stage previews and explicit SVG fallback work. Feeding persists, spends only Growth XP and leaves scientific records/review states and lifetime Explorer XP unchanged.
+- Meadow, Woodland and Misty Grove use unlocked companions. Curated Community Worlds show no observation photos, locations or research records; viewing/appreciating them changes no scientific records.
+- New research project → published task → two distinct visits → linked project/task/site/consent records → one-time reward → researcher filters → downloadable seeded dataset → site timeline.
+- Upgraded routes checked at all four requested sizes, including map, character viewer, worlds, Community and researcher dashboard.
+- Map lifecycle regression: repeated zooming, Map/List switching and leaving the route no longer leave animation callbacks running against a removed map.
 
 ## Commands
 
@@ -25,6 +31,9 @@ Verified on 22 October 2026 using Windows, Node 23.5.0 and Playwright Chromium 1
 # Server on 5173 required:
 npm run test:journey
 npm run test:quality
+npm run test:upgrades
+npm run test:responsive
+npm run test:map-lifecycle
 
 # Production preview on 4173 required:
 npm run build
@@ -33,6 +42,8 @@ npm run test:pwa
 ```
 
 `test:journey` recreates screenshots in its own isolated browser context and resets that context afterwards. It does not reset a user's ordinary browser profile.
+
+The core journey uses the illustrated fallback so scientific-flow checks do not depend on GPU availability. `test:upgrades` verifies actual Three.js rendering with software WebGL in Chromium, then starts a fresh browser for the data-workflow phase. Run suites sequentially on this machine. New screenshots 14–23 document the upgrade. Physical GPU/iPhone performance is not implied by a software-rendered browser test.
 
 ## Remaining verification and scope
 

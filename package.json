@@ -8,7 +8,10 @@
     "preview": "vite preview --host 0.0.0.0",
     "test:journey": "node tests/journey.mjs",
     "test:pwa": "node tests/pwa.mjs",
-    "test:quality": "node tests/quality.mjs"
+    "test:quality": "node tests/quality.mjs",
+    "test:upgrades": "node tests/upgrades.mjs",
+    "test:responsive": "node tests/responsive-upgrades.mjs",
+    "test:map-lifecycle": "node tests/map-lifecycle.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

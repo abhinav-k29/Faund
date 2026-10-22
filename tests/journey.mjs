@@ -3,16 +3,29 @@ import { strict as assert } from "node:assert";
 import fs from "node:fs/promises";
 const base = "http://localhost:5173";
 await fs.mkdir("presentation-assets", { recursive: true });
-const browser = await chromium.launch({ headless: true });
+const browser = await chromium.launch({
+  headless: true,
+  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader"],
+});
 const context = await browser.newContext({
   viewport: { width: 390, height: 844 },
   reducedMotion: "reduce",
+});
+// Keep the core scientific-flow regression independent of GPU availability.
+// The upgrade suite exercises the actual WebGL models and gestures separately.
+await context.addInitScript(() => {
+  const original = HTMLCanvasElement.prototype.getContext;
+  HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+    if (type === "webgl2") return null;
+    return original.call(this, type, ...args);
+  };
 });
 const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
 const go = async (path) => {
   await page.goto(base + path);
+  await page.locator("h1").first().waitFor();
   await page.waitForTimeout(200);
 };
 const state = async () =>

@@ -25,7 +25,14 @@ import {
 import { motion, useReducedMotion } from "motion/react";
 import { useApp } from "./context";
 import { species, Species } from "./data";
-import { Observation, activeConsent, repository, uid } from "./store";
+import {
+  Observation,
+  activeConsent,
+  repository,
+  uid,
+  characterProgress,
+} from "./store";
+import { ScanAnalysis } from "./scan-analysis";
 import { config } from "./config";
 import { Creature } from "./Art";
 import {
@@ -110,22 +117,42 @@ export function Scanner() {
     setCamera(false);
     toast("Photo captured. Choose an example identification below.");
   }
+  function analyse(id: number) {
+    stream.current?.getTracks().forEach((t) => t.stop());
+    setCamera(false);
+    setScanning(id);
+    setDraft((d) => ({
+      ...d,
+      uncertain: false,
+      provenance: d.photo
+        ? "User photo · simulated identification"
+        : "Demo sample identification",
+    }));
+    timer.current = setTimeout(() => n("/identify/" + id), 2200);
+  }
   return (
-    <>
+    <div className="scanner-page">
       <Heading
         eyebrow="LOOK A LITTLE CLOSER"
         title="What’s hiding in plain sight?"
         sub="Point your camera at a plant or animal."
         back
       />
-      <div className="camera-view">
+      <div
+        className="camera-view immersive-camera"
+        style={
+          {
+            "--scan-image": `url("${draft.photo || "/images/3.jpg"}")`,
+          } as React.CSSProperties
+        }
+      >
         {camera ? (
           <video ref={video} autoPlay playsInline muted />
         ) : draft.photo ? (
           <img src={draft.photo} alt="Your locally captured organism" />
         ) : (
           <>
-            <Photo id={0} />
+            <Photo id={3} />
             <div className="camera-shade" />
           </>
         )}
@@ -136,13 +163,18 @@ export function Scanner() {
             ? "CAMERA PREVIEW"
             : draft.photo
               ? "YOUR PHOTO · LOCAL ONLY"
-              : "DEMO PREVIEW"}
+              : "DEMO PREVIEW · BLUE-BANDED BEE"}
         </span>
         <div className="camera-instructions">
           {draft.photo
             ? "Photo captured. No AI identification performed."
             : "A little patience. A little wonder."}
         </div>
+        {!camera && !draft.photo && (
+          <button className="bee-scan-start" onClick={() => analyse(3)}>
+            Analyse Bee Sample · Demo <ArrowRight size={15} />
+          </button>
+        )}
       </div>
       {error && (
         <div className="notice" role="status">
@@ -164,6 +196,8 @@ export function Scanner() {
               if (f)
                 try {
                   const photo = await readPhoto(f);
+                  stream.current?.getTracks().forEach((t) => t.stop());
+                  setCamera(false);
                   setDraft((d) => ({
                     ...d,
                     photo,
@@ -188,6 +222,8 @@ export function Scanner() {
           className="icon-button"
           aria-label="Clear photo"
           onClick={() => {
+            stream.current?.getTracks().forEach((t) => t.stop());
+            setCamera(false);
             setDraft((d) => ({ ...d, photo: undefined }));
             setError("");
           }}
@@ -205,21 +241,7 @@ export function Scanner() {
       </p>
       <div className="sample-grid">
         {species.map((s) => (
-          <button
-            aria-label={s.name}
-            key={s.id}
-            onClick={() => {
-              setScanning(s.id);
-              setDraft((d) => ({
-                ...d,
-                uncertain: false,
-                provenance: d.photo
-                  ? "User photo · simulated identification"
-                  : "Demo sample identification",
-              }));
-              timer.current = setTimeout(() => n("/identify/" + s.id), 1000);
-            }}
-          >
+          <button aria-label={s.name} key={s.id} onClick={() => analyse(s.id)}>
             <Photo id={s.id} />
             <span>{s.name}</span>
             <ChevronRight size={16} />
@@ -231,24 +253,16 @@ export function Scanner() {
         public paths.
       </p>
       {scanning !== null && (
-        <div className="scan-overlay" role="status">
-          <div className="scan-orbit">
-            <Leaf size={34} />
-          </div>
-          <h2>Looking closer…</h2>
-          <p>Preparing your demo discovery.</p>
-          <Button
-            secondary
-            onClick={() => {
-              if (timer.current) clearTimeout(timer.current);
-              setScanning(null);
-            }}
-          >
-            Cancel
-          </Button>
-        </div>
+        <ScanAnalysis
+          id={scanning}
+          photo={draft.photo}
+          onCancel={() => {
+            if (timer.current) clearTimeout(timer.current);
+            setScanning(null);
+          }}
+        />
       )}
-    </>
+    </div>
   );
 }
 export function Identify() {
@@ -264,7 +278,7 @@ export function Identify() {
         title="Well, look what you found."
         back
       />
-      <div className="result-photo">
+      <div className="result-photo" data-species={s.id}>
         <Photo id={s.id} />
         <Pill>Possible Match Found</Pill>
       </div>
@@ -276,6 +290,19 @@ export function Identify() {
         Take a closer look at the colours and markings. This is a selected demo
         suggestion, not an AI result or expert verification.
       </p>
+      {s.id === 3 && (
+        <div className="identification-features">
+          <h3>What stands out?</h3>
+          <p>
+            Blue or blue-green abdominal bands. A hairy thorax and two pairs of
+            wings.
+          </p>
+          <small>
+            Several Amegilla species look similar. These example features alone
+            cannot confirm A. cingulata.
+          </small>
+        </div>
+      )}
       {draft.photo && (
         <div className="notice">
           Your photo will be saved with the selected example identification. It
@@ -344,10 +371,13 @@ export function Record() {
   );
   const [siteName, setSiteName] = useState(site?.name || "");
   const [siteId, setSiteId] = useState(site?.id || "");
-  const [coordinates, setCoordinates] = useState<{
-    lat: number;
-    lon: number;
-  }>();
+  const [coordinates, setCoordinates] = useState<
+    | {
+        lat: number;
+        lon: number;
+      }
+    | undefined
+  >(site?.coordinates);
   const [uncertainty, setUncertainty] = useState(site?.uncertainty || 1000);
   const [locError, setLocError] = useState("");
   const [error, setError] = useState("");
@@ -371,13 +401,22 @@ export function Record() {
     const duration = Number(f.get("duration"));
     const notes = String(f.get("notes") || "");
     const observedCategory = draft.uncertain ? category : s.category;
+    if (draft.taskId && (!task || task.status !== "Published")) {
+      setError(
+        "This task is not currently published. Return to Tasks to choose an available protocol.",
+      );
+      setSaving(false);
+      return;
+    }
     if (
-      (task?.id === "tree" && observedCategory !== "Plants") ||
-      (task?.id === "birds" && observedCategory !== "Birds")
+      task?.requiredCategory &&
+      task.requiredCategory !== "All" &&
+      observedCategory !== task.requiredCategory
     ) {
       setError(
         "This task requires an observation of " +
-          (task.id === "tree" ? "a tree or plant." : "a bird."),
+          task.requiredCategory.toLowerCase() +
+          ".",
       );
       setSaving(false);
       return;
@@ -389,8 +428,19 @@ export function Record() {
       setSaving(false);
       return;
     }
-    if (task?.id === "tree" && !notes.trim()) {
-      setError("Describe foliage or flowering for Urban Tree Watch.");
+    if ((task?.requiresNotes || task?.id === "tree") && !notes.trim()) {
+      setError("This research protocol requires observation notes.");
+      setSaving(false);
+      return;
+    }
+    if (
+      (task?.requiresSite || (task?.repeatVisits || 1) > 1) &&
+      !siteId &&
+      !siteName.trim()
+    ) {
+      setError(
+        "This protocol requires a named observation site for repeat monitoring.",
+      );
       setSaving(false);
       return;
     }
@@ -414,6 +464,7 @@ export function Record() {
       method: String(f.get("method")),
       notes,
       taskId: task?.id || "",
+      projectId: task?.projectId || "",
       siteId: newSiteId,
       consentId: consent.id,
       sensitive: f.get("sensitive") === "on",
@@ -429,6 +480,20 @@ export function Record() {
       ...state,
       observations: [...state.observations, obs],
       xp: state.xp + 20,
+      game: {
+        ...state.game,
+        availableGrowthXP: state.game.availableGrowthXP + 10,
+        characterGrowth:
+          obs.speciesId === null
+            ? state.game.characterGrowth
+            : {
+                ...state.game.characterGrowth,
+                [obs.speciesId]: Math.min(
+                  300,
+                  (state.game.characterGrowth[obs.speciesId] || 0) + 10,
+                ),
+              },
+      },
       sites:
         siteName.trim() && !siteId
           ? [
@@ -439,6 +504,7 @@ export function Record() {
                 location,
                 uncertainty,
                 habitat: obs.habitat,
+                coordinates: obs.coordinates,
               },
             ]
           : state.sites,
@@ -543,7 +609,7 @@ export function Record() {
                   setLocation(selected.location);
                   setUncertainty(selected.uncertainty);
                   setSiteName(selected.name);
-                  setCoordinates(undefined);
+                  setCoordinates(selected.coordinates);
                 }
               }}
             >
@@ -627,7 +693,7 @@ export function Record() {
           <textarea
             name="notes"
             rows={3}
-            required={task?.id === "tree"}
+            required={task?.id === "tree" || task?.requiresNotes}
             placeholder="What did you notice? Avoid personal information."
           />
         </label>
@@ -724,11 +790,9 @@ export function SpeciesCard({
 }) {
   const { state } = useApp();
   const sightings = state.observations.filter((o) => o.speciesId === s.id);
-  const points = Math.min(
-    100,
-    sightings.length * 20 + state.claimed.length * 15,
-  );
-  const stage = points < 35 ? 1 : points < 75 ? 2 : 3;
+  const progress = characterProgress(state, s.id);
+  const points = progress.growth / 3;
+  const stage = progress.stage;
   return (
     <div
       className={`species-card ${character ? "character-card" : ""}`}
@@ -745,9 +809,7 @@ export function SpeciesCard({
           <Creature kind={s.id} stage={stage} />
           <span className="art-spark s1">✦</span>
           <span className="art-spark s2">✧</span>
-          <span className="character-level">
-            LVL {1 + Math.floor(points / 20)}
-          </span>
+          <span className="character-level">LVL {progress.level}</span>
         </div>
       ) : (
         <Photo id={s.id} />
@@ -782,7 +844,7 @@ export function SpeciesCard({
                   ? "Fully blossomed"
                   : "Growing into something wonderful"}
               </span>
-              <b>{points}%</b>
+              <b>{Math.round(points)}%</b>
             </div>
             <div className="progress">
               <span style={{ width: points + "%" }} />
@@ -827,7 +889,7 @@ export function CardPage() {
   const n = useNavigate();
   const loc = useLocation();
   const [flipped, setFlipped] = useState(loc.search.includes("character"));
-  if (!s) return <Navigate to="/explore" />;
+  if (!s) return <Navigate to="/field-guide" />;
   const observations = state.observations.filter((o) => o.speciesId === s.id);
   return (
     <>
@@ -844,6 +906,17 @@ export function CardPage() {
       />
       <div
         className="flip-scene"
+        onPointerMove={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          e.currentTarget.style.setProperty(
+            "--glare-x",
+            `${((e.clientX - r.left) / r.width) * 100}%`,
+          );
+          e.currentTarget.style.setProperty(
+            "--glare-y",
+            `${((e.clientY - r.top) / r.height) * 100}%`,
+          );
+        }}
         onClick={(e) => {
           if (!(e.target as HTMLElement).closest("a,button"))
             setFlipped(!flipped);
@@ -858,6 +931,11 @@ export function CardPage() {
           </div>
         </div>
       </div>
+      {flipped && (
+        <Link className="text-link card-3d-link" to={"/character/" + s.id}>
+          Inspect {s.pet} in 3D <Sparkles size={16} />
+        </Link>
+      )}
       <Button secondary onClick={() => setFlipped(!flipped)}>
         <RefreshCw size={18} /> Real Species ↔ Companion
       </Button>
@@ -1037,6 +1115,12 @@ export function ObservationDetails({
           ["Weather", o.weather || "Not recorded"],
           ["Identification", o.identification],
           ["Task", task?.title || "Casual observation"],
+          [
+            "Project",
+            state.projects.find(
+              (p) => p.id === (o.projectId || task?.projectId),
+            )?.title || "General observation dataset",
+          ],
           [
             "Site",
             o.sensitive && research

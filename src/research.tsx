@@ -27,6 +27,7 @@ import { Creature } from "./Art";
 import { World } from "./pages";
 import { ObservationDetails, SpeciesCard } from "./discovery";
 import { Button, Logo, Modal, Pill, Photo, dateLabel } from "./ui";
+import { ResearchProjects, ResearchMonitoring } from "./research-projects";
 function download(content: string, name: string, type: string) {
   const url = URL.createObjectURL(new Blob([content], { type }));
   const a = document.createElement("a");
@@ -37,7 +38,11 @@ function download(content: string, name: string, type: string) {
 }
 export function Researcher() {
   const { state, setState, toast } = useApp();
-  const [view, setView] = useState("Overview");
+  const [view, setView] = useState(
+    new URLSearchParams(location.search).get("view") === "projects"
+      ? "Research Projects"
+      : "Overview",
+  );
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [review, setReview] = useState("All");
@@ -48,6 +53,9 @@ export function Researcher() {
   const [to, setTo] = useState("");
   const [selected, setSelected] = useState("");
   const [edit, setEdit] = useState<Task | null>(null);
+  const [taxon, setTaxon] = useState("All");
+  const [certainty, setCertainty] = useState("All");
+  const [maxUncertainty, setMaxUncertainty] = useState("");
   const authorised = state.observations.filter((o) =>
     state.consents.some((c) => c.id === o.consentId && c.accepted),
   );
@@ -58,7 +66,16 @@ export function Researcher() {
         (s?.name + " " + s?.latin + " " + o.id)
           .toLowerCase()
           .includes(query.toLowerCase())) &&
-      (category === "All" || s?.category === category) &&
+      (category === "All" ||
+        (o.speciesId === null
+          ? category === "Unidentified"
+          : s?.category === category)) &&
+      (taxon === "All" || String(o.speciesId) === taxon) &&
+      (certainty === "All" ||
+        (certainty === "Unconfirmed"
+          ? o.speciesId === null
+          : o.speciesId !== null)) &&
+      (!maxUncertainty || o.uncertainty <= Number(maxUncertainty)) &&
       (review === "All" || o.review === review) &&
       (task === "All" || o.taskId === task) &&
       (method === "All" || o.method === method) &&
@@ -86,7 +103,13 @@ export function Researcher() {
       <aside className="research-sidebar">
         <Logo />
         <p className="eyebrow">RESEARCH WORKSPACE</p>
-        {["Overview", "Observations", "Research Tasks"].map((v) => (
+        {[
+          "Overview",
+          "Observations",
+          "Research Tasks",
+          "Research Projects",
+          "Site Monitoring",
+        ].map((v) => (
           <button
             key={v}
             className={view === v ? "selected" : ""}
@@ -119,11 +142,15 @@ export function Researcher() {
           <div>
             <p className="eyebrow">NATURE, THROUGH A CLEARER LENS</p>
             <h1>
-              {view === "Research Tasks"
-                ? "Research tasks"
-                : view === "Observations"
-                  ? "Observation library"
-                  : "Researcher Demonstration"}
+              {view === "Research Projects"
+                ? "Research Projects"
+                : view === "Site Monitoring"
+                  ? "Site Monitoring"
+                  : view === "Research Tasks"
+                    ? "Research tasks"
+                    : view === "Observations"
+                      ? "Observation library"
+                      : "Researcher Demonstration"}
             </h1>
             <p>
               Community curiosity. Structured observations. Better questions.
@@ -147,7 +174,16 @@ export function Researcher() {
             to researchers.
           </span>
         </div>
-        {view === "Research Tasks" ? (
+        {view === "Research Projects" ? (
+          <ResearchProjects
+            onRecords={(id) => {
+              setTask(id);
+              setView("Observations");
+            }}
+          />
+        ) : view === "Site Monitoring" ? (
+          <ResearchMonitoring rows={authorised} onInspect={setSelected} />
+        ) : view === "Research Tasks" ? (
           <>
             <div className="section-title">
               <h2>Questions that begin outside.</h2>
@@ -184,6 +220,15 @@ export function Researcher() {
                     <Button secondary onClick={() => setEdit({ ...t })}>
                       Edit Demo Task <ArrowRight size={18} />
                     </Button>
+                    <button
+                      className="text-link"
+                      onClick={() => {
+                        setTask(t.id);
+                        setView("Observations");
+                      }}
+                    >
+                      View Linked Observations <ArrowRight size={15} />
+                    </button>
                   </article>
                 ))}
             </div>
@@ -245,6 +290,9 @@ export function Researcher() {
                     setArea("");
                     setFrom("");
                     setTo("");
+                    setTaxon("All");
+                    setCertainty("All");
+                    setMaxUncertainty("");
                   }}
                 >
                   Clear filters
@@ -266,10 +314,43 @@ export function Researcher() {
                   onChange={(e) => setCategory(e.target.value)}
                 >
                   <option value="All">All categories</option>
-                  {categories.slice(0, 3).map((c) => (
+                  {categories.map((c) => (
                     <option key={c}>{c}</option>
                   ))}
                 </select>
+                <select
+                  aria-label="Filter species"
+                  value={taxon}
+                  onChange={(e) => setTaxon(e.target.value)}
+                >
+                  <option value="All">All species</option>
+                  {species.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Filter identification uncertainty"
+                  value={certainty}
+                  onChange={(e) => setCertainty(e.target.value)}
+                >
+                  <option value="All">All identification states</option>
+                  <option value="Unconfirmed">
+                    Unconfirmed identification
+                  </option>
+                  <option value="Confirmed">User-confirmed demo</option>
+                </select>
+                <label className="uncertainty-filter">
+                  Location uncertainty ≤ m
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder="Any precision"
+                    value={maxUncertainty}
+                    onChange={(e) => setMaxUncertainty(e.target.value)}
+                  />
+                </label>
                 <select
                   aria-label="Filter review status"
                   value={review}
@@ -475,6 +556,21 @@ export function Researcher() {
                 >
                   <Download size={17} /> Export CSV
                 </Button>
+                <Button
+                  secondary
+                  disabled={!rows.some((o) => o.provenance.includes("Seeded"))}
+                  onClick={() =>
+                    download(
+                      csvText(
+                        rows.filter((o) => o.provenance.includes("Seeded")),
+                      ),
+                      "example-research-dataset.csv",
+                      "text/csv;charset=utf-8",
+                    )
+                  }
+                >
+                  <Download size={17} /> Example Dataset
+                </Button>
               </div>
               <div className="table-scroll">
                 <table>
@@ -534,7 +630,14 @@ export function Researcher() {
                               ?.title || "Casual observation"}
                           </small>
                         </td>
-                        <td>{o.identification}</td>
+                        <td>
+                          {o.identification}
+                          <small>
+                            {o.sensitive
+                              ? "Precision restricted"
+                              : `± ${o.uncertainty} m location uncertainty`}
+                          </small>
+                        </td>
                         <td>
                           <Pill>{o.review}</Pill>
                         </td>
@@ -676,13 +779,21 @@ export function Showcase() {
     "Monitoring",
     "Gamification",
     "Research Dashboard",
+    "Discovery Map",
+    "3D Character",
+    "Explore Worlds",
+    "Community Worlds",
+    "Research Projects",
   ];
   const phones = (items: string[][]) => (
     <div className="showcase-phones">
       {items.map(([path, title]) => (
         <div key={path}>
           <div className="phone-frame">
-            <iframe title={title} src={path + "?presentation=1"} />
+            <iframe
+              title={title}
+              src={path + (path.includes("?") ? "&" : "?") + "presentation=1"}
+            />
           </div>
           <h3>{title}</h3>
         </div>
@@ -720,7 +831,24 @@ export function Showcase() {
           </button>
         ))}
       </div>
-      {panel === "Overview" ? (
+      {panel === "Discovery Map" ? (
+        phones([["/map", "Every discovery has a place."]])
+      ) : panel === "3D Character" ? (
+        phones([["/character/3", "Meet Bumbloom, in three dimensions."]])
+      ) : panel === "Explore Worlds" ? (
+        phones([["/explore", "A little world, brought to life."]])
+      ) : panel === "Community Worlds" ? (
+        phones([
+          ["/explore?tab=community", "Fictional worlds. Shared inspiration."],
+        ])
+      ) : panel === "Research Projects" ? (
+        <div className="dashboard-frame">
+          <iframe
+            title="Research project builder showcase"
+            src="/researcher-demo?view=projects"
+          />
+        </div>
+      ) : panel === "Overview" ? (
         phones([
           ["/home", "Your everyday adventure"],
           ["/scan", "A closer look at nature"],
@@ -728,7 +856,7 @@ export function Showcase() {
         ])
       ) : panel === "Two-sided Card" ? (
         <div className="showcase-cards">
-          <SpeciesCard s={species[0]} />
+          <SpeciesCard s={species[3]} />
           <div className="showcase-flip">
             <RefreshCw />
             <span>
@@ -737,13 +865,13 @@ export function Showcase() {
               Two ways to connect.
             </span>
           </div>
-          <SpeciesCard s={species[0]} character />
+          <SpeciesCard s={species[3]} character />
         </div>
       ) : panel === "Discovery" ? (
         phones([
           ["/scan", "01 · Scan"],
-          ["/identify/0", "02 · Identify"],
-          ["/record/0", "03 · Record"],
+          ["/identify/3", "02 · Identify"],
+          ["/record/3", "03 · Record"],
         ])
       ) : panel === "Research Flow" ? (
         <div className="flow-composition">

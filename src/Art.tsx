@@ -181,7 +181,13 @@ export function Creature({
     </svg>
   );
 }
-export function Landscape({ children, richness = 4 }: { children?: React.ReactNode; richness?: number }) {
+export function Landscape({
+  children,
+  richness = 4,
+}: {
+  children?: React.ReactNode;
+  richness?: number;
+}) {
   return (
     <div className="landscape">
       <svg
@@ -227,7 +233,12 @@ export function Landscape({ children, richness = 4 }: { children?: React.ReactNo
             />
           </g>
         ))}
-        {(richness === 0 ? [] : richness < 3 ? [215, 600] : [140, 215, 600, 700, 790, 310]).map((x, i) => (
+        {(richness === 0
+          ? []
+          : richness < 3
+            ? [215, 600]
+            : [140, 215, 600, 700, 790, 310]
+        ).map((x, i) => (
           <g key={x} transform={`translate(${x} ${380 + (i % 3) * 20})`}>
             <path
               d="M0 20V-10M0 10q-30-25-23-34q27 0 23 34M0 14q30-25 23-35q-27 0-23 35"

@@ -22,7 +22,7 @@ import {
   TreePine,
 } from "lucide-react";
 import { useApp } from "./context";
-import { speciesIds, taskProgress, Task,characterProgress } from "./store";
+import { speciesIds, taskProgress, Task, characterProgress } from "./store";
 import { species } from "./data";
 import { Creature, Landscape } from "./Art";
 import { Button, Heading, Modal, Pill, Photo, dateLabel } from "./ui";
@@ -67,6 +67,9 @@ export function Home() {
           LVL {String(1 + Math.floor(state.xp / 100)).padStart(2, "0")} · Nature
           Scout
         </Pill>
+        <Link className="home-tasks-pill" to="/tasks">
+          <Target size={15} /> Tasks
+        </Link>
       </div>
       <section className="world-card">
         <div className="section-mini">
@@ -108,7 +111,16 @@ export function Home() {
         </div>
         <ArrowUpRight size={22} />
       </Link>
-      <Link className="home-tasks-shortcut" to="/tasks"><span><Target size={22}/></span><div><h3>Tasks & Research Missions</h3><p>Follow a field protocol. Help build a useful record.</p></div><ChevronRight size={19}/></Link>
+      <Link className="home-tasks-shortcut" to="/tasks">
+        <span>
+          <Target size={22} />
+        </span>
+        <div>
+          <h3>Tasks & Research Missions</h3>
+          <p>Follow a field protocol. Help build a useful record.</p>
+        </div>
+        <ChevronRight size={19} />
+      </Link>
       <div className="section-title">
         <h2>A little adventure?</h2>
         <Link to="/tasks">
@@ -205,7 +217,7 @@ export function Collection() {
             onClick={() => setTab(t)}
           >
             {t === "Species" ? <BookOpen size={17} /> : <Sparkles size={17} />}{" "}
-            {t==='Species'?'Species Cards':t}
+            {t === "Species" ? "Species Cards" : t}
             <span>{ids.length}</span>
           </button>
         ))}
@@ -240,11 +252,18 @@ export function Collection() {
                 (tab === "Characters" ? "companion-tile" : "")
               }
               style={{ "--card-color": s.color } as React.CSSProperties}
-              to={
-                (tab === "Characters" ? "/character/" : "/card/") + s.id
-              }
+              to={(tab === "Characters" ? "/character/" : "/card/") + s.id}
             >
-              <div className="mini-card-top"><span>NO. {String(s.id+1).padStart(3,'0')}</span><span>↔</span></div>
+              <div className="mini-card-top">
+                <span>NO. {String(s.id + 1).padStart(3, "0")}</span>
+                <span>↔</span>
+              </div>
+              {state.observations.some(
+                (o) =>
+                  o.speciesId === s.id &&
+                  !o.provenance.includes("Seeded") &&
+                  Date.now() - Date.parse(o.createdAt) < 86400000,
+              ) && <span className="new-card-label">RECENTLY FOUND</span>}
               {tab === "Characters" ? (
                 <div className="tile-creature">
                   <Creature kind={s.id} />
@@ -274,17 +293,23 @@ export function Collection() {
                     )}
                   </small>
                 ) : (
-                  <div className="progress">
-                    <span
-                      style={{
-                        width:
-                          Math.min(
-                            100,
-                            characterProgress(state,s.id).growth/3,
-                          ) + "%",
-                      }}
-                    />
-                  </div>
+                  <>
+                    <small>
+                      Level {characterProgress(state, s.id).level} · Stage{" "}
+                      {characterProgress(state, s.id).stage} of 3
+                    </small>
+                    <div className="progress">
+                      <span
+                        style={{
+                          width:
+                            Math.min(
+                              100,
+                              characterProgress(state, s.id).growth / 3,
+                            ) + "%",
+                        }}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
             </Link>
@@ -312,8 +337,23 @@ export function Collection() {
         <Lock size={14} /> Private collection · research records follow your
         agreement
       </p>
-      {!search&&category==='All'&&ids.length<species.length&&<div className="locked-card-strip">{species.filter(s=>!ids.includes(s.id)).slice(0,3).map(s=><Link key={s.id} to="/field-guide"><span>NO. {String(s.id+1).padStart(3,'0')}</span><Lock size={22}/><small>Not yet discovered</small></Link>)}</div>}
-      <Link className="inline-card" to="/field-guide"><BookOpen/> Browse the Field Guide <ChevronRight/></Link>
+      {!search && category === "All" && ids.length < species.length && (
+        <div className="locked-card-strip">
+          {species
+            .filter((s) => !ids.includes(s.id))
+            .slice(0, 3)
+            .map((s) => (
+              <Link key={s.id} to="/field-guide">
+                <span>NO. {String(s.id + 1).padStart(3, "0")}</span>
+                <Lock size={22} />
+                <small>Not yet discovered</small>
+              </Link>
+            ))}
+        </div>
+      )}
+      <Link className="inline-card" to="/field-guide">
+        <BookOpen /> Browse the Field Guide <ChevronRight />
+      </Link>
       <Link className="inline-card" to="/contributions">
         <FlaskConical /> My Contributions <ChevronRight />
       </Link>
@@ -590,7 +630,11 @@ export function Tasks() {
                               ...s,
                               claimed: [...s.claimed, t.id],
                               xp: s.xp + t.reward,
-                              game:{...s.game,availableGrowthXP:s.game.availableGrowthXP+t.reward},
+                              game: {
+                                ...s.game,
+                                availableGrowthXP:
+                                  s.game.availableGrowthXP + t.reward,
+                              },
                             },
                       );
                       toast("Task completed. Nature noticed. Probably.");
@@ -609,7 +653,12 @@ export function Tasks() {
                     View Task <ArrowRight size={17} />
                   </Button>
                 )}
-                <button className="task-protocol-link text-link" onClick={()=>setDetail(t)}>Read Protocol <BookOpen size={15}/></button>
+                <button
+                  className="task-protocol-link text-link"
+                  onClick={() => setDetail(t)}
+                >
+                  Read Protocol <BookOpen size={15} />
+                </button>
               </article>
             );
           })}
@@ -625,7 +674,13 @@ export function Tasks() {
           <p>{detail.question}</p>
           <h3>How to take part</h3>
           <p>{detail.instructions}</p>
-          {detail.projectId&&<p className="task-project-label">Project: {state.projects.find(p=>p.id===detail.projectId)?.title||'Research demonstration'}</p>}
+          {detail.projectId && (
+            <p className="task-project-label">
+              Project:{" "}
+              {state.projects.find((p) => p.id === detail.projectId)?.title ||
+                "Research demonstration"}
+            </p>
+          )}
           <dl className="metadata">
             <dt>Region</dt>
             <dd>{detail.region}</dd>
@@ -635,7 +690,11 @@ export function Tasks() {
             <dd>{detail.duration} minutes</dd>
             <dt>Record</dt>
             <dd>{detail.requiredFields}</dd>
-            <dt>Repeat visits</dt><dd>{detail.repeatVisits||1} visit{(detail.repeatVisits||1)>1?'s at the same named site':''}</dd>
+            <dt>Repeat visits</dt>
+            <dd>
+              {detail.repeatVisits || 1} visit
+              {(detail.repeatVisits || 1) > 1 ? "s at the same named site" : ""}
+            </dd>
           </dl>
           <div className="notice">{detail.safety}</div>
           <p>
@@ -658,8 +717,10 @@ export function Tasks() {
 export function Sites() {
   const { state, setDraft } = useApp();
   const n = useNavigate();
-  const loc=useLocation();
-  const [selected, setSelected] = useState(new URLSearchParams(loc.search).get('site')||'');
+  const loc = useLocation();
+  const [selected, setSelected] = useState(
+    new URLSearchParams(loc.search).get("site") || "",
+  );
   const [comparison, setComparison] = useState(50);
   const site = state.sites.find((s) => s.id === selected);
   const visits = state.observations

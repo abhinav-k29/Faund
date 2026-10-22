@@ -29,8 +29,10 @@ import { repository, activeConsent } from "./store";
 import { Logo, Credits } from "./ui";
 import { Welcome, ConsentPage, Profile } from "./participation";
 import { Home, Explore as FieldGuide, Collection, Tasks, Sites } from "./pages";
-import {DiscoveryMap} from './observation-map';
-import {ExploreWorlds,CharacterPage,CommunityViewer} from './worlds';
+const DiscoveryMap = React.lazy(() =>
+  import("./observation-map").then((m) => ({ default: m.DiscoveryMap })),
+);
+import { ExploreWorlds, CharacterPage, CommunityViewer } from "./worlds";
 import {
   Scanner,
   Identify,
@@ -39,8 +41,14 @@ import {
   Unlock,
   Contributions,
 } from "./discovery";
-import { Researcher, Showcase } from "./research";
+const Researcher = React.lazy(() =>
+  import("./research").then((m) => ({ default: m.Researcher })),
+);
+const Showcase = React.lazy(() =>
+  import("./research").then((m) => ({ default: m.Showcase })),
+);
 import "./style.css";
+import "./upgrades.css";
 function Navigation() {
   const items = [
     ["/home", HomeIcon, "Home"],
@@ -149,33 +157,42 @@ function App() {
           </div>
         )}
         <div className={wide ? "" : "mobile-app"}>
-          <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route path="/consent" element={<ConsentPage />} />
-            <Route element={<Gate />}>
-              <Route path="/home" element={<Home />} />
-              <Route path="/map" element={<DiscoveryMap />} />
-              <Route path="/explore" element={<ExploreWorlds />} />
-              <Route path="/field-guide" element={<FieldGuide />} />
-              <Route path="/character/:id" element={<CharacterPage />} />
-              <Route path="/community/:id" element={<CommunityViewer />} />
-              <Route path="/scan" element={<Scanner />} />
-              <Route path="/identify/:id" element={<Identify />} />
-              <Route path="/record/:id" element={<Record />} />
-              <Route path="/card/:id" element={<CardPage />} />
-              <Route path="/unlock/:id" element={<Unlock />} />
-              <Route path="/collection" element={<Collection />} />
-              <Route path="/ecosystem" element={<ExploreWorlds />} />
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/contributions" element={<Contributions />} />
-              <Route path="/sites" element={<Sites />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/credits" element={<Credits />} />
-            </Route>
-            <Route path="/researcher-demo" element={<Researcher />} />
-            <Route path="/showcase" element={<Showcase />} />
-            <Route path="*" element={<Navigate to="/" />} />
-          </Routes>
+          <React.Suspense
+            fallback={
+              <div className="route-loading">
+                <Leaf size={28} />
+                <p>Opening a little wonder…</p>
+              </div>
+            }
+          >
+            <Routes>
+              <Route path="/" element={<Welcome />} />
+              <Route path="/consent" element={<ConsentPage />} />
+              <Route element={<Gate />}>
+                <Route path="/home" element={<Home />} />
+                <Route path="/map" element={<DiscoveryMap />} />
+                <Route path="/explore" element={<ExploreWorlds />} />
+                <Route path="/field-guide" element={<FieldGuide />} />
+                <Route path="/character/:id" element={<CharacterPage />} />
+                <Route path="/community/:id" element={<CommunityViewer />} />
+                <Route path="/scan" element={<Scanner />} />
+                <Route path="/identify/:id" element={<Identify />} />
+                <Route path="/record/:id" element={<Record />} />
+                <Route path="/card/:id" element={<CardPage />} />
+                <Route path="/unlock/:id" element={<Unlock />} />
+                <Route path="/collection" element={<Collection />} />
+                <Route path="/ecosystem" element={<ExploreWorlds />} />
+                <Route path="/tasks" element={<Tasks />} />
+                <Route path="/contributions" element={<Contributions />} />
+                <Route path="/sites" element={<Sites />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/credits" element={<Credits />} />
+              </Route>
+              <Route path="/researcher-demo" element={<Researcher />} />
+              <Route path="/showcase" element={<Showcase />} />
+              <Route path="*" element={<Navigate to="/" />} />
+            </Routes>
+          </React.Suspense>
         </div>
       </div>
       {message && (
