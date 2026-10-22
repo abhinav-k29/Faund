@@ -6,16 +6,60 @@ The core journey is **Explore → Photograph / demo sample → Identify → Reco
 
 The five navigation items are **Home | Map | Scan | Collection | Explore**. **Tasks** has prominent Home shortcuts and a link in Explore; it remains a core research feature. The previous species/habitat browser is preserved at **`/field-guide`**. **`/ecosystem`** opens the upgraded My World experience.
 
-## Run
+## Start the app after restarting the laptop
 
-Use Node 22.12+, npm, and a modern browser.
+The app runs on a local development server. Shutting down or restarting the laptop stops that server. Opening a saved browser link does not start it again.
+
+Every time you want to use the app:
+
+1. Open **Windows Terminal → PowerShell** (or a PowerShell terminal in VS Code).
+2. Copy and run these two commands:
+
+   ```powershell
+   Set-Location -LiteralPath 'C:\Users\abhin\OneDrive\Documents\Faund'
+   npm.cmd run dev
+   ```
+3. Wait until the terminal shows **Local: http://localhost:5173/**, then open that address in your browser.
+4. **Keep that terminal open while using the app.** The command keeps running; it does not return to the PowerShell prompt. Closing the terminal or pressing **Ctrl+C** stops the server.
+
+Port **5173** is now set in `package.json`. You do not need to add `-- --port 5173` or a bare `5173` to the command. The server reports an error if that port is occupied instead of silently changing the URL. Use **`npm.cmd`** on Windows PowerShell to avoid the `npm.ps1` execution-policy problem; no execution-policy change is needed.
+
+### First-time setup only
+
+Use Node 22.12+, npm, and a modern browser. For a new copy of the project, or if the `node_modules` folder is missing, run:
 
 ```powershell
-npm install
-npm run dev -- --port 5173
+Set-Location -LiteralPath 'C:\Users\abhin\OneDrive\Documents\Faund'
+npm.cmd install
+npm.cmd run dev
 ```
 
-Open http://localhost:5173/. The dev server binds to all interfaces. No API keys, account, database or paid service is needed. Complete the participation agreement using the adult demonstration profile. **Demo Explorer is selected by default** and populates the app immediately after affirmative consent. Choose **Fresh Explorer** on that screen for an empty journal. Existing saved explorers are preserved. Profile also offers **Load Demo Explorer**.
+You do not need to reinstall dependencies or run a production build after each reboot.
+
+### If it does not open
+
+| What you see                                                | What to do                                                                                                                                                                                      |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm.ps1 cannot be loaded` / scripts are disabled         | Use `npm.cmd run dev`, exactly as above.                                                                                                                                                      |
+| `Could not read package.json` / `ENOENT`                | Run the `Set-Location` command above first. The terminal must be in this project's folder.                                                                                                    |
+| `vite` is not recognised or a dependency is missing       | Run `npm.cmd install` in the project folder, then `npm.cmd run dev`.                                                                                                                        |
+| Browser says it cannot connect / `ERR_CONNECTION_REFUSED` | Check that the server terminal is still open and shows the Local URL. Start it with the two commands above.                                                                                     |
+| `Port 5173 is already in use`                             | Open http://localhost:5173/ first: the app may already be running. If an old prototype server is running, stop it with **Ctrl+C in its own terminal**, then run `npm.cmd run dev` once. |
+| Browser shows `404 Not Found`                             | An incorrectly started Vite server may be treating a bare `5173` as a folder name. Stop that server with **Ctrl+C**, then run `npm.cmd run dev` from the project folder.              |
+
+If the port is occupied and you cannot find its terminal, these **read-only** PowerShell commands identify the process:
+
+```powershell
+$previewListeners = Get-NetTCPConnection -LocalPort 5173 -State Listen -ErrorAction SilentlyContinue
+$previewListeners | Select-Object LocalAddress, LocalPort, OwningProcess
+$previewListeners | ForEach-Object {
+    Get-CimInstance Win32_Process -Filter "ProcessId=$($_.OwningProcess)"
+} | Select-Object ProcessId, Name, CommandLine
+```
+
+The prototype's command line should point into this project's `node_modules\vite` folder. Stop only the identified prototype process through Task Manager if its terminal is unavailable; leave unrelated processes running. Then start the app again using the two commands above.
+
+No API keys, account, database or paid service is needed. Complete the participation agreement using the adult demonstration profile. **Demo Explorer is selected by default** and populates the app immediately after affirmative consent. Choose **Fresh Explorer** on that screen for an empty journal. Existing saved explorers are preserved. Profile also offers **Load Demo Explorer**.
 
 ## Phone access
 
@@ -39,28 +83,28 @@ Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Verc
 
 ## Demonstration routes
 
-| Route              | Purpose                                                   |
-| ------------------ | --------------------------------------------------------- |
-| `/`                | Welcome and quick tour                                    |
-| `/consent`         | Required adult participation agreement                    |
-| `/home`            | Discovery action, ecosystem and contribution summary      |
-| `/map`             | Private geographic observation map, filters and date-grouped list |
-| `/field-guide`     | Preserved species and habitat browser |
-| `/character/3`     | Rotate, zoom, reset, preview evolution and feed Bumbloom |
-| `/explore`         | Meadow, Woodland and Misty Grove; My World / Community |
-| `/community/whisperwood` | A curated fictional public-world preview |
-| `/scan`            | Camera, photo input, six demo samples                     |
-| `/identify/0`      | Suggested identification, alternatives and uncertainty    |
-| `/record/0`        | Structured observation form                               |
-| `/card/0`          | Real species / companion 3D card                          |
-| `/collection`      | Searchable private species and character collection       |
-| `/ecosystem`       | Preserved direct entry to Explore → My World |
-| `/tasks`           | Research and exploration tasks                            |
-| `/contributions`   | Observation details, corrections and deletion             |
-| `/sites`           | Repeat visits, timelines and concept comparison slider    |
-| `/profile`         | Achievements, consent review/withdrawal and demo controls |
-| `/researcher-demo` | Dataset, filters, charts, review, CSV, projects/task builder and site monitoring |
-| `/showcase`        | Existing compositions plus Map, 3D Character, Worlds, Community and Projects |
+| Route                      | Purpose                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------- |
+| `/`                      | Welcome and quick tour                                                           |
+| `/consent`               | Required adult participation agreement                                           |
+| `/home`                  | Discovery action, ecosystem and contribution summary                             |
+| `/map`                   | Private geographic observation map, filters and date-grouped list                |
+| `/field-guide`           | Preserved species and habitat browser                                            |
+| `/character/3`           | Rotate, zoom, reset, preview evolution and feed Bumbloom                         |
+| `/explore`               | Meadow, Woodland and Misty Grove; My World / Community                           |
+| `/community/whisperwood` | A curated fictional public-world preview                                         |
+| `/scan`                  | Camera, photo input, six demo samples                                            |
+| `/identify/0`            | Suggested identification, alternatives and uncertainty                           |
+| `/record/0`              | Structured observation form                                                      |
+| `/card/0`                | Real species / companion 3D card                                                 |
+| `/collection`            | Searchable private species and character collection                              |
+| `/ecosystem`             | Preserved direct entry to Explore → My World                                    |
+| `/tasks`                 | Research and exploration tasks                                                   |
+| `/contributions`         | Observation details, corrections and deletion                                    |
+| `/sites`                 | Repeat visits, timelines and concept comparison slider                           |
+| `/profile`               | Achievements, consent review/withdrawal and demo controls                        |
+| `/researcher-demo`       | Dataset, filters, charts, review, CSV, projects/task builder and site monitoring |
+| `/showcase`              | Existing compositions plus Map, 3D Character, Worlds, Community and Projects     |
 
 Species IDs are 0–5. Browsing a field-guide card does not add an observation.
 
