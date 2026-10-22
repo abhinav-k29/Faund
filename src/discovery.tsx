@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { motion, useReducedMotion } from "motion/react";
 import { useApp } from "./context";
+import { BeePanel } from "./bee-panel";
 import { species, Species } from "./data";
 import {
   Observation,
@@ -31,6 +32,7 @@ import {
   repository,
   uid,
   characterProgress,
+  biomeFor,
 } from "./store";
 import { ScanAnalysis } from "./scan-analysis";
 import { config } from "./config";
@@ -231,6 +233,8 @@ export function Scanner() {
           <RefreshCw />
         </button>
       </div>
+      {!camera && !draft.photo && <BeePanel onConfirm={() => analyse(3)} onUncertain={() => { setDraft((d) => ({ ...d, uncertain: true, provenance: "Demo sample identification" })); n("/record/3"); }} />}
+      {draft.photo && <div className="notice"><p>Your photograph stays attached throughout this journey. Select an explicit demo example below, or keep the identification unconfirmed on the result screen.</p></div>}
       <div className="section-title">
         <h2>Try a sample discovery</h2>
         <Pill>DEMO</Pill>
@@ -279,7 +283,7 @@ export function Identify() {
         back
       />
       <div className="result-photo" data-species={s.id}>
-        <Photo id={s.id} />
+        {draft.photo ? <img className="photo" src={draft.photo} alt="Your photo · selected example has not classified this image" /> : <Photo id={s.id} />}
         <Pill>Possible Match Found</Pill>
       </div>
       <p className="eyebrow top-space">SUGGESTED IDENTIFICATION</p>
@@ -945,6 +949,7 @@ export function CardPage() {
             setState((v) => ({
               ...v,
               ecosystem: [...new Set([...v.ecosystem, s.id])],
+              game: { ...v.game, selectedBiome: biomeFor(s.id) },
             }));
             toast(`${s.pet} is at home in your ecosystem.`);
             n("/ecosystem");

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import {
@@ -14,7 +14,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import { useApp } from "./context";
-import { Observation } from "./store";
+import { Observation, exampleSites } from "./store";
 import { species } from "./data";
 import { Button, Heading, Modal, Photo, Pill, dateLabel } from "./ui";
 import { ObservationDetails } from "./discovery";
@@ -28,15 +28,28 @@ type Pin = {
 function category(o: Observation) {
   return o.speciesId === null ? "Unidentified" : species[o.speciesId].category;
 }
+const observationTime = (o: Observation) => new Date(o.observedAt).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Sydney", timeZoneName: "short" });
+function periodFor(o: Observation) {
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+  const date = o.observedAt.slice(0, 10);
+  if (date === today) return "Today";
+  const week = new Date(today + "T12:00:00");
+  week.setDate(week.getDate() - ((week.getDay() + 6) % 7));
+  if (date >= week.toLocaleDateString("en-CA") && date <= today) return "This Week";
+  return date.slice(0, 7) === today.slice(0, 7) ? "Earlier This Month" : "Earlier Field Notes";
+}
 export function DiscoveryMap() {
-  const { state, setDraft } = useApp();
+  const { state, setState, setDraft } = useApp();
   const n = useNavigate();
+  const [params] = useSearchParams();
+  const focus = params.get("focus") || "";
+  const mission = state.tasks.find((t) => t.id === params.get("task") && t.status === "Published");
   const [view, setView] = useState("Map");
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("All");
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
-  const [selected, setSelected] = useState("");
+  const [selected, setSelected] = useState(focus);
   const [detail, setDetail] = useState("");
   const [tiles, setTiles] = useState(false);
   const [tileError, setTileError] = useState(false);
@@ -66,6 +79,7 @@ export function DiscoveryMap() {
   const pins = useMemo(() => {
     const grouped = new Map<string, Pin>();
     for (const o of rows) {
+      if (o.sensitive) continue;
       const site = state.sites.find((s) => s.id === o.siteId);
       const c = o.coordinates || site?.coordinates;
       if (!c || !Number.isFinite(c.lat) || !Number.isFinite(c.lon)) continue;
@@ -85,6 +99,10 @@ export function DiscoveryMap() {
   const restricted = rows.some((o) => o.sensitive);
   const chosen = pins.find((p) => p.key === selected);
   const observation = state.observations.find((o) => o.id === detail);
+  const focusSite = state.sites.find((s) => s.id === focus && (pins.some((p) => p.key === s.id) || exampleSites.some((e) => e.id === s.id))) || exampleSites.find((s) => s.id === focus);
+  useEffect(() => {
+    if (focus) { setSelected(focus); setView("Map"); }
+  }, [focus, params.get("task")]);
   useEffect(() => {
     if (view !== "Map" || !host.current) return;
     const m = L.map(host.current, {
@@ -131,7 +149,7 @@ export function DiscoveryMap() {
               ? "plant-pin"
               : c === "Birds"
                 ? "bird-pin"
-                : "other-pin"),
+              : "other-pin") + (p.key === focus ? " focused-pin" : ""),
         html: `<span><b>${p.records.length > 1 ? p.records.length : c === "Birds" ? "B" : c === "Plants" ? "P" : c === "Insects" ? "I" : "?"}</b></span>`,
         iconSize: [38, 44],
         iconAnchor: [19, 40],
@@ -155,7 +173,15 @@ export function DiscoveryMap() {
     return () => {
       group.remove();
     };
-  }, [pins, view]);
+  }, [pins, view, focus]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !focusSite?.coordinates) return;
+    const { lat, lon } = focusSite.coordinates;
+    const area = L.circle([lat, lon], { radius: Math.max(120, focusSite.uncertainty), color: "#627d43", fillColor: "#d2f078", fillOpacity: 0.3, weight: 2 }).addTo(m);
+    m.setView([lat, lon], 14, { animate: false });
+    return () => { area.remove(); };
+  }, [focusSite, view, pins]);
   useEffect(() => {
     const m = map.current;
     if (!m || !tiles || restricted) return;
@@ -174,7 +200,7 @@ export function DiscoveryMap() {
     };
   }, [tiles, restricted, view]);
   const observeAgain = (o: Observation) => {
-    setDraft({ siteId: o.siteId });
+    setDraft({ siteId: o.siteId, taskId: o.taskId });
     n("/scan");
   };
   return (
@@ -187,6 +213,17 @@ export function DiscoveryMap() {
       <div className="map-privacy">
         <Lock size={14} /> Only your observations. Never shown in Community.
       </div>
+      {focusSite && (
+        <section className="map-focus-panel" aria-label="Task destination">
+          <Pill>{mission ? "RECOMMENDED SURVEY AREA" : "SELECTED AREA"}</Pill>
+          <h2>{focusSite.name}</h2>
+          <p>{focusSite.location} · {focusSite.habitat}</p>
+          {mission && <p><b>{mission.title}</b><br />{mission.safety}</p>}
+          <small>Example public area · map focus only. Check access on arrival; no live directions or route guidance.</small>
+          <Button onClick={() => { if (!state.sites.some((s) => s.id === focusSite.id)) setState((s) => ({ ...s, sites: [...s.sites, { ...focusSite }] })); setDraft({ taskId: mission?.id, siteId: focusSite.id }); n("/scan"); }}>Start {mission ? "Task" : "Observation"} Here <ArrowRight size={16} /></Button>
+        </section>
+      )}
+      {focus && !focusSite && <p className="notice">This destination has no available location. Choose a recorded site below or return to Tasks.</p>}
       <div className="tabs map-tabs">
         {["Map", "List"].map((v) => (
           <button
@@ -289,8 +326,7 @@ export function DiscoveryMap() {
           )}
           {rows.length > pins.reduce((a, p) => a + p.records.length, 0) && (
             <p className="notice">
-              Some records have no recorded coordinates. They remain available
-              in List; no location is invented.
+              Some locations are sensitive or have no recorded coordinates. Their records remain in List; no location is invented.
             </p>
           )}
           <div className="map-place-list">
@@ -304,7 +340,7 @@ export function DiscoveryMap() {
               >
                 <MapPin size={16} />
                 <span>{p.label}</span>
-                <small>{p.records.length} visits</small>
+                <small>{new Set(p.records.map((o) => o.observedAt)).size} visits</small>
                 <ChevronRight size={15} />
               </button>
             ))}
@@ -312,21 +348,21 @@ export function DiscoveryMap() {
         </>
       ) : (
         <div className="map-observation-list">
-          {[...new Set(rows.map((o) => o.observedAt.slice(0, 10)))]
-            .sort()
-            .reverse()
-            .map((day) => (
-              <section key={day}>
-                <h3 className="list-date">{dateLabel(day)}</h3>
+          {["Today", "This Week", "Earlier This Month", "Earlier Field Notes"]
+            .filter((period) => rows.some((o) => periodFor(o) === period))
+            .map((period) => (
+              <section key={period}>
+                <h3 className="list-date">{period}</h3>
                 {rows
-                  .filter((o) => o.observedAt.startsWith(day))
+                  .filter((o) => periodFor(o) === period)
+                  .sort((a, b) => b.observedAt.localeCompare(a.observedAt))
                   .map((o) => (
                     <button
                       className="observation-row"
                       key={o.id}
                       onClick={() => setDetail(o.id)}
                     >
-                      {o.speciesId !== null ? (
+                      {o.photo && !o.sensitive ? <img className="photo" src={o.photo} alt="Your recorded organism" /> : o.speciesId !== null ? (
                         <Photo id={o.speciesId} />
                       ) : (
                         <span className="mystery">
@@ -339,10 +375,11 @@ export function DiscoveryMap() {
                             ? "Mystery Discovery"
                             : species[o.speciesId].name}
                         </h3>
-                        <p>{o.location}</p>
+                        <p>{o.sensitive ? "Sensitive location withheld" : state.sites.find((s) => s.id === o.siteId)?.name || o.location}</p>
                         <small>
-                          {o.review} · {o.uncertainty} m uncertainty
+                          {dateLabel(o.observedAt.slice(0, 10))} · {observationTime(o)}<br />{o.review}{o.sensitive ? " · restricted" : ` · ± ${o.uncertainty} m`}
                         </small>
+                        {o.taskId && <span className="map-task-tag">{state.tasks.find((t) => t.id === o.taskId)?.title || "Linked task"}</span>}
                       </div>
                       <ChevronRight size={17} />
                     </button>
@@ -370,10 +407,11 @@ export function DiscoveryMap() {
       </p>
       {chosen && (
         <Modal title={chosen.label} onClose={() => setSelected("")}>
-          <Pill>{chosen.records.length} visits · private place</Pill>
-          {chosen.records.map((o) => (
+          <Pill>{new Set(chosen.records.map((o) => o.observedAt)).size} visits · private place</Pill>
+          {mission && focus === chosen.key && <div className="notice"><MapPin size={18} /><p><b>{mission.title}</b><br />Recommended survey area. Close this sheet to see the highlighted area and start your task. No turn-by-turn navigation.</p></div>}
+          {[...chosen.records].sort((a, b) => b.observedAt.localeCompare(a.observedAt)).map((o) => (
             <article className="map-selected-record" key={o.id}>
-              {o.speciesId !== null && <Photo id={o.speciesId} />}
+              {o.photo ? <img className="photo" src={o.photo} alt="Your recorded organism" /> : o.speciesId !== null && <Photo id={o.speciesId} />}
               <div>
                 <span className="eyebrow">
                   {o.provenance.includes("Seeded")
@@ -391,12 +429,15 @@ export function DiscoveryMap() {
                     : species[o.speciesId].latin}
                 </p>
                 <p>
-                  {dateLabel(o.observedAt)} · {o.location}
+                  {dateLabel(o.observedAt.slice(0, 10))} · {observationTime(o)}
+                  <br />{o.location} · {o.habitat}
                   <br />
                   {o.identification}
                   <br />
                   {o.review} · ± {o.uncertainty} m
                 </p>
+                {o.taskId && <p className="map-task-context"><b>{state.tasks.find((t) => t.id === o.taskId)?.title || "Linked task"}</b><br />{state.projects.find((p) => p.id === o.projectId)?.title}</p>}
+                {o.notes && <p className="map-note">{o.notes}</p>}
                 <small>Record {o.id}</small>
                 <div className="button-row">
                   <Button

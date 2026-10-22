@@ -629,6 +629,7 @@ export function Researcher() {
                             {state.tasks.find((t) => t.id === o.taskId)
                               ?.title || "Casual observation"}
                           </small>
+                          {o.projectId && <button className="table-project-link" onClick={() => setView("Research Projects")}>{state.projects.find((p) => p.id === o.projectId)?.title || "Linked project"} <ArrowUpRight size={11} /></button>}
                         </td>
                         <td>
                           {o.identification}

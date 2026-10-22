@@ -29,7 +29,13 @@ These PNGs are actual captures from `npm run test:journey` and `npm run test:upg
 | 22-research-project-builder.png | Research projects/task builder |
 | 23-research-site-monitoring.png | Repeat-site research summary |
 | 24-research-projects.png | Clean research project overview |
-| example-upgraded-dataset.csv | Export of 18 seeded demonstration records |
+| example-upgraded-dataset.csv | Export of 24 seeded demonstration records |
+| 25-populated-home.png | Demo mode, stronger Tasks shortcut and highlighted repeat survey |
+| 26-populated-species.png | Six numbered collectible species cards with companion links |
+| 27-populated-characters.png | Six owned companions with stage, level, growth and biome |
+| 28-task-map-focus.png | Pollinator Watch recommended area focused from Tasks |
+| 29-bee-field-entry.png | Bee details immediately below the scanner |
+| 30-map-field-journal.png | Chronological observations with task and status context |
 
 All screens show a local concept prototype. Sample records, simulated identification and simulated reviews must not be presented as scientific evidence or actual research impact. `IMAGE_CREDITS.md` records photo attribution and licences. Preserve attribution when reusing photographs in slides.
 

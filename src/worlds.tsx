@@ -19,14 +19,13 @@ import {
   TreePine,
 } from "lucide-react";
 import { useApp } from "./context";
-import { BiomeId, characterProgress, feedCharacter, speciesIds } from "./store";
+import { BiomeId, characterProgress, feedCharacter, speciesIds, biomeFor } from "./store";
 import { Creature, Landscape } from "./Art";
 import { species } from "./data";
 import { Button, Heading, Modal, Pill } from "./ui";
 import { Scene } from "./scene";
 import { communityWorlds } from "./community-data";
-export const biomeFor = (id: number): BiomeId =>
-  id === 5 ? "wetland" : id === 2 || id === 3 ? "meadow" : "woodland";
+export { biomeFor } from "./store";
 const biomes: [BiomeId, string, string][] = [
   ["meadow", "Meadow", "Flowers & little wings"],
   ["woodland", "Woodland", "A canopy of curiosity"],
@@ -326,7 +325,7 @@ export function ExploreWorlds() {
                     <TreePine size={19} />
                   )}
                 </span>
-                <strong>{name}</strong>
+                <strong>{name} <span className="biome-count">{state.ecosystem.filter((c) => ids.includes(c) && biomeFor(c) === id).length}</span></strong>
                 <small>
                   {available(id) ? sub : "Discover more life to unlock"}
                 </small>

@@ -10,6 +10,7 @@ const page = await context.newPage();
 await page.goto("http://localhost:5173/consent");
 await page.getByRole("checkbox").nth(0).check();
 await page.getByRole("checkbox").nth(1).check();
+await page.getByRole("radio", { name: /Fresh Explorer/ }).check();
 await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
 const research = await context.newPage();
 await research.goto("http://localhost:5173/researcher-demo");

@@ -59,6 +59,7 @@ export type Task = {
   requiresNotes?: boolean;
   requiresSite?: boolean;
   repeatVisits?: number;
+  recommendedSiteId?: string;
 };
 export type ResearchProject = {
   id: string;
@@ -120,6 +121,7 @@ export type State = {
   mode: string;
   projects: ResearchProject[];
   game: GameProgress;
+  startMode: "demo" | "fresh";
 };
 export const initialTasks: Task[] = [
   {
@@ -183,8 +185,28 @@ export const initialTasks: Task[] = [
     requiredFields: "Two plant species",
     safety: "Stay on public paths.",
   },
+  {
+    id: "pollinator",
+    title: "Pollinator Watch",
+    question: "Which flower visitors are recorded across five visits to the same garden edge?",
+    instructions: "Return to the same named site on five different visits. Watch for five minutes, record a flower visitor and describe its activity without touching it. Positive sightings only; these do not measure pollinator abundance.",
+    target: "Flower-visiting insects",
+    region: "Sydney public gardens",
+    duration: 5,
+    status: "Published",
+    reward: 50,
+    type: "Research",
+    requiredFields: "Date, named site, five minutes effort, visitor activity notes",
+    safety: "Stay on public paths. Do not handle bees, approach nests or pick flowers.",
+    projectId: "seasonal-life",
+    requiredCategory: "Insects",
+    requiresNotes: true,
+    requiresSite: true,
+    repeatVisits: 5,
+    recommendedSiteId: "site-b",
+  },
 ];
-export const emptyState = (): State => ({
+export const emptyState = (startMode: "demo" | "fresh" = "demo"): State => ({
   consents: [],
   observations: [],
   xp: 0,
@@ -195,6 +217,7 @@ export const emptyState = (): State => ({
   mode: "Fresh Explorer",
   projects: initialProjects.map((p) => ({ ...p })),
   game: newGame(),
+  startMode,
 });
 export const activeConsent = (s: State) => {
   const c = s.consents.at(-1);
@@ -213,6 +236,7 @@ export const makeConsent = (accepted: boolean): Consent => ({
 });
 export function enrichTask(t: Task): Task {
   return {
+    recommendedSiteId: ({ tree: "site-a", birds: "site-c", spotter: "site-c", leaf: "site-d", pollinator: "site-b" } as Record<string, string>)[t.id],
     ...(t.id === "tree"
       ? {
           projectId: "urban-habitats",
@@ -274,19 +298,63 @@ export const exampleSites: Site[] = [
     uncertainty: 75,
     habitat: "Garden",
   },
+  {
+    id: "site-g",
+    name: "Coogee · community garden",
+    location: "Coogee public garden area",
+    coordinates: { lat: -33.922, lon: 151.254 },
+    uncertainty: 200,
+    habitat: "Garden",
+  },
+  {
+    id: "site-h",
+    name: "Campus · flowering courtyard",
+    location: "UNSW Kensington public courtyard",
+    coordinates: { lat: -33.919, lon: 151.226 },
+    uncertainty: 100,
+    habitat: "Urban green space",
+  },
+];
+// Explicit, shared field stories. Dates are fixed for a repeatable presentation;
+// none of these entries asserts a real occurrence at the example public areas.
+const demoVisits: [number | null, number, string, string, string][] = [
+  [5, 0, "09-09T09:10", "tree", "Same path-side tree; juvenile foliage visible in the example photo."],
+  [3, 1, "09-12T10:20", "pollinator", "A flower visitor paused at the purple flower bed during the timed watch."],
+  [1, 2, "09-15T08:15", "birds", "Two small birds moved through low shrubs; watched from the path."],
+  [2, 3, "09-18T11:05", "tree", "Yellow flower heads noted on a planted wattle beside the campus walk."],
+  [1, 4, "09-20T08:40", "birds", "A bird stayed in dense planting near the reed-edge path."],
+  [2, 5, "09-23T14:25", "tree", "Flowering branch photographed from the garden path; no plant material collected."],
+  [3, 1, "09-25T10:20", "pollinator", "Returned to the same flower bed; visitor activity noted during five minutes."],
+  [4, 2, "10-04T07:55", "birds", "One bird perched above the woodland path; no playback or feeding."],
+  [5, 3, "10-06T11:05", "tree", "Repeat tree visit from the same side; leaves and visible canopy noted."],
+  [3, 1, "10-08T10:20", "pollinator", "Blue-banded visitor briefly hovered between flowers; identification needs checking."],
+  [5, 4, "10-10T09:30", "tree", "Planted eucalypt foliage recorded beside the wetland approach, away from the water."],
+  [5, 0, "10-11T09:10", "tree", "Same tree and photo direction as September; visible foliage documented again."],
+  [3, 5, "10-12T14:25", "", "Single flower visitor seen on a small flowering border during a casual walk."],
+  [5, 0, "10-13T09:10", "tree", "Third monitoring visit; notes describe visible leaves without inferring tree health."],
+  [3, 6, "10-15T10:35", "", "Flower visitor photographed from the public garden entrance; no nest approached."],
+  [0, 2, "10-17T08:15", "birds", "Three lorikeets visited a flowering tree during a stationary watch."],
+  [0, 0, "10-18T09:10", "birds", "Lorikeets called from the canopy above the established monitoring path."],
+  [2, 3, "10-19T11:05", "tree", "Revisited the same wattle; flower heads and survey effort recorded."],
+  [4, 4, "10-20T08:40", "birds", "A perched kookaburra observed from a designated path; distance maintained."],
+  [3, 1, "10-21T10:20", "pollinator", "Fourth visit to the flowering edge. One more visit completes this demo protocol."],
+  [3, 7, "10-21T13:45", "", "Flower visitor passed through the courtyard planting during a short photo stop."],
+  [0, 5, "10-22T08:30", "birds", "Two lorikeets moved between garden trees during five minutes of observation."],
+  [2, 7, "10-22T11:15", "tree", "Wattle leaves and remaining flower heads documented beside the courtyard."],
+  [null, 6, "10-22T12:05", "", "Unidentified insect; sensitive-location example requiring additional review."],
 ];
 export function seedState(s: State): State {
   const consent = activeConsent(s);
   if (!consent) return s;
-  const ids = [3, 2, 0, 5, 1, 4, 3, 0, 5, 2, 1, 3, 0, 2, 4, 5, 3, null];
   return {
     ...s,
     mode: "Demo Explorer",
+    startMode: "demo",
     xp: 640,
     claimed: ["tree", "spotter"],
     ecosystem: [0, 1, 2, 3, 4, 5],
     projects: s.projects?.length ? s.projects : initialProjects,
-    tasks: s.tasks.map(enrichTask),
+    tasks: [...s.tasks, ...initialTasks.filter((t) => !s.tasks.some((old) => old.id === t.id))].map(enrichTask),
     sites: exampleSites.map((x) => ({ ...x })),
     game: {
       ...newGame(),
@@ -294,17 +362,16 @@ export function seedState(s: State): State {
       characterGrowth: { 0: 145, 1: 35, 2: 210, 3: 85, 4: 50, 5: 130 },
       activeCompanionId: 3,
     },
-    observations: ids.map((id, i) => {
-      const site = exampleSites[i % 6];
-      const taskId =
-        id === 2 || id === 5 ? "tree" : id === 0 || id === 1 ? "birds" : "";
+    observations: demoVisits.map(([id, siteIndex, date, taskId, note], i) => {
+      const site = exampleSites[siteIndex];
+      const observedAt = `2026-${date}:00+${date.startsWith("09") ? "10" : "11"}:00`;
       return {
         id: "sample-" + (i + 1),
         contributor: config.participantId,
         speciesId: id,
         provisional: id === null ? "Insects" : "",
-        observedAt: `2026-${i < 6 ? "09" : "10"}-${String(4 + i).padStart(2, "0")}T${i % 2 ? "15" : "09"}:30`,
-        createdAt: "2026-10-22T09:00:00+11:00",
+        observedAt,
+        createdAt: new Date(new Date(observedAt).getTime() + 5 * 60000).toISOString(),
         location: site.location,
         coordinates: site.coordinates,
         uncertainty: site.uncertainty,
@@ -318,26 +385,22 @@ export function seedState(s: State): State {
             : i % 4 === 0
               ? "Demo reviewed"
               : "Awaiting review",
-        reviewNotes: "",
-        method: i % 3 ? "Visual observation" : "Timed stationary survey",
-        notes:
-          "Fictional demonstration visit. " +
-          (taskId === "tree"
-            ? "Foliage and flowering appearance recorded as example context."
-            : "No real field event or verified species occurrence is asserted."),
+        reviewNotes: i % 7 === 0 ? "Demo review: revisit the identification details and survey notes. No expert verification performed." : i % 4 === 0 ? "Demo completeness check only; not a verified occurrence." : "",
+        method: taskId === "pollinator" || taskId === "birds" ? "Timed stationary survey" : i % 2 ? "Photo observation" : "Visual observation",
+        notes: "Fictional demonstration visit. " + note,
         taskId,
         projectId:
           taskId === "tree" ? "urban-habitats" : taskId ? "seasonal-life" : "",
         siteId: site.id,
         consentId: consent.id,
-        sensitive: i === 17,
+        sensitive: id === null,
         provenance: "Seeded demonstration · fictional observation",
         recordType: "HumanObservation" as const,
         individuals: 1 + (i % 3),
-        duration: 5,
+        duration: taskId ? 5 : 2 + (i % 4),
         habitat: site.habitat,
-        activity: id === 2 || id === 5 ? "Foliage noted" : "Observed",
-        weather: "Example: clear",
+        activity: id === 2 || id === 5 ? "Foliage and flowering noted" : id === 3 ? "Visiting flowers" : "Observed from path",
+        weather: ["Example: clear", "Example: light cloud", "Example: light breeze"][i % 3],
       };
     }),
   };
@@ -352,8 +415,9 @@ export function migrateState(input: Partial<State>): State {
         base.claimed.length * 15) *
         3,
     );
-  return {
+  const migrated: State = {
     ...base,
+    startMode: input.startMode || "demo",
     tasks: (base.tasks || initialTasks).map(enrichTask),
     projects: base.projects || initialProjects,
     game: {
@@ -363,6 +427,11 @@ export function migrateState(input: Partial<State>): State {
       ...input.game,
     },
   };
+  // Older empty profiles never recorded a Fresh/Demo choice. The presentation
+  // default can fill those safely, but never replace existing records/progress.
+  return !input.startMode && !base.observations.length && !base.xp && !base.claimed.length && !base.ecosystem.length && activeConsent(base)
+    ? seedState(migrated)
+    : migrated;
 }
 export function characterProgress(s: State, id: number) {
   const growth = Math.max(0, Math.min(300, s.game.characterGrowth[id] || 0));
@@ -372,6 +441,16 @@ export function characterProgress(s: State, id: number) {
     level: 1 + Math.floor(growth / 25),
     percent: growth === 300 ? 100 : growth % 100,
   };
+}
+export const biomeFor = (id: number): BiomeId =>
+  id === 5 ? "wetland" : id === 2 || id === 3 ? "meadow" : "woodland";
+export const biomeLabel = (id: number) =>
+  ({ meadow: "Meadow", woodland: "Woodland", wetland: "Misty Grove" })[biomeFor(id)];
+export function taskDestination(t: Task, s: State): Site | undefined {
+  if (t.recommendedSiteId)
+    return s.sites.find((site) => site.id === t.recommendedSiteId) || exampleSites.find((site) => site.id === t.recommendedSiteId);
+  const previous = s.observations.find((o) => o.taskId === t.id && o.siteId && !o.sensitive);
+  return previous ? s.sites.find((site) => site.id === previous.siteId) : undefined;
 }
 export function feedCharacter(s: State, id: number): State {
   if (

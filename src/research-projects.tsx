@@ -9,7 +9,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useApp } from "./context";
-import { Observation, ResearchProject, Task, uid } from "./store";
+import { Observation, ResearchProject, Task, uid, exampleSites } from "./store";
 import { species } from "./data";
 import { Button, Modal, Pill, dateLabel } from "./ui";
 export function ResearchProjects({
@@ -332,6 +332,14 @@ export function ResearchProjects({
                   setTask({ ...task, requiredFields: e.target.value })
                 }
               />
+            </label>
+            <label>
+              Recommended public survey area
+              <select value={task.recommendedSiteId || ""} onChange={(e) => setTask({ ...task, recommendedSiteId: e.target.value })}>
+                <option value="">No recommended area</option>
+                {exampleSites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+              <small>Opens a highlighted area in Map via Take Me There. No live navigation.</small>
             </label>
             <label className="checkbox">
               <input

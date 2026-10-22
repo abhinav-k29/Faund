@@ -11,7 +11,8 @@
     "test:quality": "node tests/quality.mjs",
     "test:upgrades": "node tests/upgrades.mjs",
     "test:responsive": "node tests/responsive-upgrades.mjs",
-    "test:map-lifecycle": "node tests/map-lifecycle.mjs"
+    "test:map-lifecycle": "node tests/map-lifecycle.mjs",
+    "test:population": "node tests/population.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

@@ -49,7 +49,7 @@ assert(
 await go("/profile");
 await page.getByRole("button", { name: "Load Demo Explorer" }).click();
 await page.getByRole("button", { name: "Load Demo Records" }).click();
-assert.equal((await state()).observations.length, 18);
+assert.equal((await state()).observations.length, 24);
 const migrated = await page.evaluate(async () => {
   const { migrateState } = await import("/src/store.ts");
   const current = JSON.parse(localStorage.getItem("nature-discovery-v1"));
@@ -74,15 +74,15 @@ console.log(
 );
 await go("/map");
 await page.locator(".discovery-pin").first().waitFor();
-assert.equal(await page.locator(".discovery-pin").count(), 6);
+assert.equal(await page.locator(".discovery-pin").count(), 8);
 await page.getByLabel("Search mapped observations").fill("Blue-banded");
 await page.getByRole("button", { name: "List", exact: true }).click();
 assert.equal(
   await page.locator(".map-observation-list .observation-row").count(),
-  4,
+  7,
 );
 await page.getByRole("button", { name: "Map", exact: true }).click();
-assert.equal(await page.locator(".map-place-list>button").count(), 3);
+assert.equal(await page.locator(".map-place-list>button").count(), 4);
 await page.getByLabel("Search mapped observations").fill("");
 await page.getByRole("button", { name: "Show map date filters" }).click();
 await page.getByLabel("From date", { exact: true }).fill("2026-10-10");
@@ -103,12 +103,12 @@ await page
   .getByRole("button", { name: "View Observation", exact: true })
   .first()
   .click();
-assert(await page.getByText("sample-1", { exact: true }).isVisible());
+assert(await page.getByText("sample-17", { exact: true }).isVisible());
 await page.getByRole("button", { name: "Close dialog" }).click();
 await page.locator(".map-place-list>button").first().click();
 await page.screenshot({ path: "presentation-assets/14-personal-map.png" });
 await page.getByRole("link", { name: "View Site Timeline" }).click();
-await expect(page.locator(".timeline>div")).toHaveCount(3);
+await expect(page.locator(".timeline>div")).toHaveCount(4);
 await page.getByRole("button", { name: "Close dialog" }).click();
 console.log(
   "PASS record-derived geographic markers, grouping, map/list/search/date filters and repeat-site timeline",
@@ -200,13 +200,13 @@ assert.equal(
   "2",
 );
 await page.screenshot({ path: "presentation-assets/19-meadow-biome.png" });
-await page.getByRole("button", { name: /Woodland A canopy/ }).click();
+await page.getByRole("button", { name: /Woodland.*A canopy/ }).click();
 await page.waitForTimeout(300);
 assert.equal(
   await page.locator(".scene-canvas").getAttribute("data-character-count"),
   "3",
 );
-await page.getByRole("button", { name: /Misty Grove Still water/ }).click();
+await page.getByRole("button", { name: /Misty Grove.*Still water/ }).click();
 await expect(page.locator(".scene-canvas")).toHaveAttribute(
   "data-character-count",
   "1",
@@ -331,7 +331,7 @@ for (let i = 0; i < 2; i++) {
   await page.waitForURL("**/card/3");
 }
 s = await state();
-assert.equal(s.observations.length, 20);
+assert.equal(s.observations.length, 26);
 assert(
   s.observations
     .slice(-2)
@@ -368,7 +368,7 @@ await page
 assert.equal(await page.locator("tbody tr").count(), 2);
 await page.getByLabel("Filter task", { exact: true }).selectOption("All");
 await page.getByLabel("Filter species", { exact: true }).selectOption("3");
-assert.equal(await page.locator("tbody tr").count(), 6);
+assert.equal(await page.locator("tbody tr").count(), 9);
 await page.getByLabel("Filter species", { exact: true }).selectOption("All");
 await page
   .getByLabel("Filter identification uncertainty")
@@ -385,19 +385,19 @@ const csv = await fs.readFile(
   "presentation-assets/example-upgraded-dataset.csv",
   "utf8",
 );
-assert.equal(csv.split("\r\n").length, 19);
+assert.equal(csv.split("\r\n").length, 25);
 assert(csv.includes("projectId"));
 assert(!csv.includes("decimalLatitude"));
 await page
   .getByRole("button", { name: "Site Monitoring", exact: true })
   .click();
-assert.equal(await page.locator(".monitoring-card").count(), 6);
+assert.equal(await page.locator(".monitoring-card").count(), 8);
 await page
   .locator(".monitoring-card")
   .first()
   .getByRole("button", { name: "Inspect Visit Timeline" })
   .click();
-assert.equal(await page.locator(".timeline>div").count(), 5);
+assert.equal(await page.locator(".timeline>div").count(), 6);
 await page.getByRole("button", { name: "Close dialog" }).click();
 await page.screenshot({
   path: "presentation-assets/23-research-site-monitoring.png",

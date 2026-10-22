@@ -22,7 +22,7 @@ import {
   TreePine,
 } from "lucide-react";
 import { useApp } from "./context";
-import { speciesIds, taskProgress, Task, characterProgress } from "./store";
+import { speciesIds, taskProgress, Task, characterProgress, biomeLabel, taskDestination, seedState } from "./store";
 import { species } from "./data";
 import { Creature, Landscape } from "./Art";
 import { Button, Heading, Modal, Pill, Photo, dateLabel } from "./ui";
@@ -39,7 +39,7 @@ export function World({ large = false }: { large?: boolean }) {
             to={"/card/" + id + "?side=character"}
             aria-label={`Meet ${species[id].pet}`}
           >
-            <Creature kind={id} />
+            <Creature kind={id} stage={characterProgress(state, id).stage} />
           </Link>
         ))}
         {ids.length === 0 && (
@@ -50,11 +50,13 @@ export function World({ large = false }: { large?: boolean }) {
   );
 }
 export function Home() {
-  const { state } = useApp();
+  const { state, setState } = useApp();
   const ids = speciesIds(state);
+  const activeTasks = state.tasks.filter((t) => t.status === "Published" && !state.claimed.includes(t.id));
+  const recentId = [...state.observations].sort((a, b) => b.observedAt.localeCompare(a.observedAt)).find((o) => o.speciesId !== null)?.speciesId;
   const task = state.tasks.find(
-    (t) => t.status === "Published" && t.type === "Research",
-  );
+    (t) => t.status === "Published" && t.type === "Research" && !state.claimed.includes(t.id) && taskProgress(t, state) < 1,
+  ) || state.tasks.find((t) => t.status === "Published" && t.type === "Research");
   return (
     <>
       <div className="greeting">
@@ -68,9 +70,14 @@ export function Home() {
           Scout
         </Pill>
         <Link className="home-tasks-pill" to="/tasks">
-          <Target size={15} /> Tasks
+          <Target size={15} /> Tasks · {activeTasks.length} active
         </Link>
       </div>
+      {state.mode === "Demo Explorer" ? (
+        <div className="demo-journal-strip"><Pill>DEMO EXPLORER</Pill><span>{state.observations.length} field notes · {state.sites.length} places · fictional data</span></div>
+      ) : !state.observations.length && (
+        <button className="presentation-load" onClick={() => setState(seedState(state))}><Sparkles size={20} /><span><strong>Load Demo Explorer</strong><small>A collected world, ready to explore. 24 fictional records.</small></span><ArrowRight size={18} /></button>
+      )}
       <section className="world-card">
         <div className="section-mini">
           <span>
@@ -117,7 +124,7 @@ export function Home() {
         </span>
         <div>
           <h3>Tasks & Research Missions</h3>
-          <p>Follow a field protocol. Help build a useful record.</p>
+          <p>{activeTasks.length} active · {state.claimed.length} completed. Follow a research mission.</p>
         </div>
         <ChevronRight size={19} />
       </Link>
@@ -130,13 +137,13 @@ export function Home() {
       {task && (
         <Link to="/tasks" className="task-feature">
           <div className="task-art">
-            <TreePine size={38} />
+            {task.requiredCategory === "Insects" ? <Flower2 size={38} /> : task.requiredCategory === "Birds" ? <Compass size={38} /> : <TreePine size={38} />}
             <span className="mini-star">✦</span>
           </div>
           <div>
             <Pill>RESEARCH TASK</Pill>
             <h3>{task.title}</h3>
-            <p>Same tree. A new chapter.</p>
+            <p>{task.repeatVisits && task.repeatVisits > 1 ? `${Math.round(taskProgress(task, state) * task.repeatVisits)} of ${task.repeatVisits} repeat visits · continue your survey` : "Follow a field protocol. Add your next chapter."}</p>
             <span className="reward">
               +{task.reward} XP <ArrowRight size={15} />
             </span>
@@ -150,14 +157,14 @@ export function Home() {
         </Link>
       </div>
       {ids.length ? (
-        <Link to={"/card/" + ids[0]} className="recent">
-          <Photo id={ids[0]} />
+        <Link to={"/card/" + recentId} className="recent">
+          <Photo id={recentId!} />
           <div>
             <span className="eyebrow">A RECENT DISCOVERY</span>
-            <h3>{species[ids[0]].name}</h3>
+            <h3>{species[recentId!].name}</h3>
             <p>One species. Another side.</p>
           </div>
-          <Creature kind={ids[0]} />
+          <Creature kind={recentId!} stage={characterProgress(state, recentId!).stage} />
         </Link>
       ) : (
         <div className="empty small">
@@ -222,6 +229,7 @@ export function Collection() {
           </button>
         ))}
       </div>
+      <div className="collection-summary"><span>{ids.length} species · {state.observations.length} observations</span><Link to="/explore">My World <ArrowUpRight size={13} /></Link></div>
       <label className="search">
         <Search size={18} />
         <input
@@ -256,7 +264,7 @@ export function Collection() {
             >
               <div className="mini-card-top">
                 <span>NO. {String(s.id + 1).padStart(3, "0")}</span>
-                <span>↔</span>
+                <span>{tab === "Species" ? "TWO-SIDED ↔" : "YOUR COMPANION"}</span>
               </div>
               {state.observations.some(
                 (o) =>
@@ -266,12 +274,13 @@ export function Collection() {
               ) && <span className="new-card-label">RECENTLY FOUND</span>}
               {tab === "Characters" ? (
                 <div className="tile-creature">
-                  <Creature kind={s.id} />
+                  <Creature kind={s.id} stage={characterProgress(state, s.id).stage} />
                   <span>✦</span>
                 </div>
               ) : (
                 <Photo id={s.id} />
               )}
+              {tab === "Species" && <div className="preview-companion" aria-hidden="true"><Creature kind={s.id} stage={characterProgress(state, s.id).stage} /></div>}
               <div className="tile-copy">
                 <span className="eyebrow">
                   {tab === "Species" ? s.category : s.type}
@@ -311,6 +320,8 @@ export function Collection() {
                     </div>
                   </>
                 )}
+                <span className="tile-connection">{tab === "Species" ? `Flip to ${s.pet} ↔` : `${biomeLabel(s.id)} · ${characterProgress(state, s.id).growth}/300 Growth XP`}</span>
+                {tab === "Species" && (() => { const taskId = state.observations.find((o) => o.speciesId === s.id && o.taskId)?.taskId; const task = state.tasks.find((t) => t.id === taskId); return task && <span className="tile-task"><Target size={11} /> {task.title}</span>; })()}
               </div>
             </Link>
           ))}
@@ -357,6 +368,7 @@ export function Collection() {
       <Link className="inline-card" to="/contributions">
         <FlaskConical /> My Contributions <ChevronRight />
       </Link>
+      <Link className="inline-card" to="/tasks"><Target /> Tasks & Research Missions <ChevronRight /></Link>
     </>
   );
 }
@@ -563,8 +575,8 @@ export function Tasks() {
           <h3>Find your next reason to head outside.</h3>
           <p>
             {state.claimed.length} completed ·{" "}
-            {state.tasks.filter((t) => t.status === "Published").length}{" "}
-            available tasks
+            {state.tasks.filter((t) => t.status === "Published" && !state.claimed.includes(t.id)).length}{" "}
+            active tasks
           </p>
         </div>
       </div>
@@ -659,6 +671,7 @@ export function Tasks() {
                 >
                   Read Protocol <BookOpen size={15} />
                 </button>
+                {taskDestination(t, state) && <Link className="task-directions text-link" to={`/map?focus=${encodeURIComponent(taskDestination(t, state)!.id)}&task=${encodeURIComponent(t.id)}`}><MapPin size={15} /> Take Me There</Link>}
               </article>
             );
           })}
@@ -697,6 +710,7 @@ export function Tasks() {
             </dd>
           </dl>
           <div className="notice">{detail.safety}</div>
+          {taskDestination(detail, state) && <Link className="inline-card" to={`/map?focus=${encodeURIComponent(taskDestination(detail, state)!.id)}&task=${encodeURIComponent(detail.id)}`}><MapPin /><span>Take Me There<small>{taskDestination(detail, state)!.name}</small></span><ArrowRight /></Link>}
           <p>
             Consistent methods and effort help interpret observations. No real
             research team receives these records.

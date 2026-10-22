@@ -15,7 +15,7 @@ npm install
 npm run dev -- --port 5173
 ```
 
-Open http://localhost:5173/. The dev server binds to all interfaces. No API keys, account, database or paid service is needed. Complete the participation agreement using the adult demonstration profile. In Profile, choose **Load Demo Explorer** for populated sample records. This requires prior affirmative consent.
+Open http://localhost:5173/. The dev server binds to all interfaces. No API keys, account, database or paid service is needed. Complete the participation agreement using the adult demonstration profile. **Demo Explorer is selected by default** and populates the app immediately after affirmative consent. Choose **Fresh Explorer** on that screen for an empty journal. Existing saved explorers are preserved. Profile also offers **Load Demo Explorer**.
 
 ## Phone access
 
@@ -64,7 +64,7 @@ Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Verc
 
 Species IDs are 0–5. Browsing a field-guide card does not add an observation.
 
-For a short pitch: accept consent → Profile / Load Demo Explorer → Map / select a place → Scan / Analyse Bee Sample → confirm → record → Collection / flip the bee card → Inspect Bumbloom in 3D → Explore / Meadow → feed Growth XP → Community / inspect a fictional world → Home / Tasks → researcher dashboard / Research Projects. Demo mode now contains **18 explicitly fictional observations at six plausible Sydney public areas**, with repeat visits, all six species, varied dates, methods, uncertainties and review states. It includes six companions, separate Growth XP and populated biomes. A previously collected species creates another sighting rather than a first-time unlock; use Fresh Explorer to demonstrate the initial reveal.
+For a short pitch: accept consent with Demo Explorer selected → Collection / six species and Characters → Home / Tasks / Pollinator Watch / Take Me There → Map / highlighted area and visit details → Start Task Here → Scan / bee field entry / Analyse Bee Sample → confirm → record → flip the bee card → Inspect Bumbloom in 3D → Visit in My World → feed Growth XP → Community / fictional world → researcher dashboard / Research Projects. Demo mode contains **24 explicitly fictional observations at eight plausible Sydney public areas**, with distinct notes, dates, methods, uncertainties and review states. It includes six owned companions, separate Growth XP and three populated biomes. Urban Tree Watch and Bird Spotter are completed; Pollinator Watch has four of five same-site visits. A previously collected species creates another sighting rather than a first-time unlock; choose Fresh Explorer to demonstrate the initial reveal.
 
 In **Research Projects**, create a project and publish a task with a question, target category, protocol, region, effort, safety instructions, notes/site requirements and number of distinct visits. Open it in mobile Tasks and record the required observations. They retain project/task/site/consent links. Repeat-task progress counts distinct observation timestamps at the same named site. Inspect linked records, use species/date/identification-uncertainty filters, and open **Site Monitoring**. **Export CSV** downloads the current view; **Example Dataset** exports only seeded demonstration records in that view.
 
@@ -80,7 +80,7 @@ CSV uses concepts such as occurrenceID, eventDate, scientificName, coordinateUnc
 
 ## Map, 3D and game-data boundaries
 
-The Leaflet map derives every pin and list entry from actual local observation records, grouping repeat sites. Records without coordinates remain in List; coordinates are never invented from a location description. A local geographically anchored Sydney schematic works offline and is labelled **not for navigation**. Optional OpenStreetMap street tiles require an explicit action and internet access, display attribution, and reveal the viewed tile area to the tile provider. No observation payload is sent. External tiles are disabled while sensitive records are in the filtered view. No analytics or background tracking is enabled.
+The Leaflet map derives every observation pin and list entry from actual local records, grouping repeat sites. Sensitive records have no geographic pin and their list locality is withheld; records without coordinates remain in List. Coordinates are never invented from a location description. Task links use `/map?focus=site-b&task=pollinator` to highlight a recommended area and open existing visits. A recommended area without observations appears as an area circle, never a fabricated observation marker. Starting there retains the task and named site through recording. This is map focus, with no live directions or invented walking times. A local geographically anchored Sydney schematic works offline and is labelled **not for navigation**. Optional OpenStreetMap street tiles require an explicit action and internet access, display attribution, and reveal the viewed tile area to the tile provider. No observation payload is sent. External tiles are disabled while sensitive records are in the filtered view. No analytics or background tracking is enabled.
 
 The six companions are **real procedural 3D geometry**, not images on planes: Pipwing, Bumbloom, Wattlet, Bramblewisp, Chuckleroot and Mistleaf. The renderer is lazy-loaded React Three Fiber / Three.js with Drei orbit controls. Geometry is reusable across the viewer and biomes; no GLB files or remote model service is needed. Pixel ratio is capped at 1.5; rendering pauses offscreen/in background, and idle movement respects reduced motion. The original SVG art is retained as a clearly labelled fallback when WebGL2 is unavailable. Add `?fallback=1` to a character page to demonstrate it.
 
@@ -94,7 +94,7 @@ Functional: navigation, consent gates and withdrawal, camera integration and fal
 
 Simulated: identification (selected example, never image classification), researcher identity/permissions, expert review, research transmission, scientific project activity and vegetation-change interpretation. The comparison slider uses clearly labelled artwork rather than actual before/after field photographs. No authentication, backend, live nearby species, research integration or legal certification exists. Guardian consent is a concept only and minors cannot activate participation. No conservation outcomes or research partnerships are asserted.
 
-For a clean start choose Profile → **Fresh Explorer · Reset Demo**. This removes this app’s local observations, photos, consent and game state. **Load Demo Explorer** replaces progress with labelled sample records while preserving consent.
+For a clean start choose Profile → **Fresh Explorer · Reset Demo**. This removes this app’s local observations, photos, consent and game state and remembers the explicit Fresh Explorer choice through the next consent/reload. **Load Demo Explorer** replaces progress with labelled sample records while preserving consent. An empty Home also offers a direct Load Demo Explorer action. Seed dates are fixed in September/October 2026 for repeatable presentations; relative journal headings use the current date and may change over time.
 
 ## Verification and screenshots
 
@@ -104,13 +104,14 @@ With the dev server running:
 npx playwright install chromium
 npm run test:journey
 npm run test:quality
+npm run test:population
 npm run test:upgrades
 npm run test:responsive
 ```
 
 The original scientific-flow journey and camera/privacy quality tests remain. The upgrade suite additionally checks migration, map/list/filter consistency, all six rendered 3D models, drag/reset, evolution previews, feeding persistence and data isolation, biomes, fictional Community boundaries, project/task publication, linked repeated observations and example exports. Layout checks cover 375×812, 390×844, 430×932 and 1440×900. The core journey uses the SVG fallback to stay independent of GPU availability; the upgrade suite tests actual WebGL separately, then closes that browser before its research-data phase. Run suites sequentially on memory-constrained machines.
 
-New actual screenshots **14–23** are in `presentation-assets/`, covering the map, bee scanner, card faces, 3D viewer, Meadow, Community, collection, project builder and monitoring. Earlier assets remain available. The source checkpoint before this upgrade is **`checkpoints/before-worlds-upgrade.zip`**; it excludes `node_modules` and `.npm-cache`.
+Actual screenshots **14–24** cover the map, scanner, cards, 3D viewer, Meadow, Community and research tools. **25–30** document the populated Home, both Collection tabs, task-focused map, bee field entry and chronological map journal. Earlier assets remain available. Source checkpoints are **`checkpoints/before-worlds-upgrade.zip`** and **`checkpoints/before-population-polish.zip`**; they exclude dependencies and caches. See `docs/POPULATION_NOTES.md` for this pass.
 
 `tests/pwa.mjs` tests the production build’s manifest, service worker and offline reload when a preview server runs at port 4173. These automated checks use desktop Chromium. Physical iPhone Safari, actual device camera permissions, geolocation and Home Screen installation still need manual device verification. See `docs/VERIFICATION.md` for the recorded results.
 
@@ -129,6 +130,7 @@ New actual screenshots **14–23** are in `presentation-assets/`, covering the m
 - `src/scene.tsx`, `src/scene-canvas.tsx`: lazy renderer, six procedural models, habitats, camera and fallback.
 - `src/worlds.tsx`, `src/community-data.ts`: personal progression and isolated fictional public worlds.
 - `src/scan-analysis.tsx`: clearly scripted identification stages.
+- `src/bee-panel.tsx`: visible bee field entry, comparison guidance and discovery actions.
 - `src/upgrades.css`: additions to the existing design system.
 - `src/ui.tsx`, `src/style.css`: shared UI and central design tokens.
 

@@ -43,6 +43,7 @@ await go("/scan");
 assert(page.url().endsWith("/consent"));
 await page.getByRole("checkbox").nth(0).check();
 await page.getByRole("checkbox").nth(1).check();
+await page.getByRole("radio", { name: /Fresh Explorer/ }).check();
 await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
 await page.waitForURL("**/home");
 assert((await state()).consents.at(-1).timestamp);

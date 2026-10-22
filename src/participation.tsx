@@ -113,6 +113,7 @@ export function ConsentPage() {
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
   const [declined, setDeclined] = useState(false);
+  const [startMode, setStartMode] = useState(state.startMode);
   return (
     <main className="consent-page">
       <Link to="/" className="text-link">
@@ -189,6 +190,19 @@ export function ConsentPage() {
           legally certified policy or live research programme.
         </p>
       </details>
+      {!state.observations.length && (
+        <fieldset className="explorer-choice">
+          <legend>Your first adventure</legend>
+          <label className={startMode === "demo" ? "chosen" : ""}>
+            <input type="radio" name="start-mode" value="demo" checked={startMode === "demo"} onChange={() => setStartMode("demo")} />
+            <span><strong>Demo Explorer <Pill>RECOMMENDED</Pill></strong><small>24 fictional observations, 6 companions, 8 sites and living biomes. Ready to present.</small></span>
+          </label>
+          <label className={startMode === "fresh" ? "chosen" : ""}>
+            <input type="radio" name="start-mode" value="fresh" checked={startMode === "fresh"} onChange={() => setStartMode("fresh")} />
+            <span><strong>Fresh Explorer</strong><small>Start an empty journal and make your own discoveries.</small></span>
+          </label>
+        </fieldset>
+      )}
       <label className="checkbox">
         <input
           type="checkbox"
@@ -223,10 +237,10 @@ export function ConsentPage() {
       <Button
         disabled={!agree || !adult}
         onClick={() => {
-          setState((s) => ({
-            ...s,
-            consents: [...s.consents, makeConsent(true)],
-          }));
+          setState((s) => {
+            const next = { ...s, startMode, consents: [...s.consents, makeConsent(true)] };
+            return !s.observations.length && startMode === "demo" ? seedState(next) : next;
+          });
           n("/home");
         }}
       >
@@ -375,7 +389,7 @@ export function Profile() {
         Current mode: {state.mode}. Demo Explorer replaces observations with
         labelled sample records. Consent remains your explicit decision.
       </p>
-      <Button secondary onClick={() => setConfirm("demo")}>
+      <Button onClick={() => setConfirm("demo")}>
         Load Demo Explorer
       </Button>
       <Button secondary onClick={() => setConfirm("reset")}>
@@ -427,7 +441,7 @@ export function Profile() {
                 setState(seedState(state));
                 toast("Labelled sample explorer loaded.");
               } else {
-                const cleared = emptyState();
+                const cleared = emptyState("fresh");
                 repository.save(cleared);
                 setState(cleared);
                 window.location.assign("/");
