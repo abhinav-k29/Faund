@@ -13,7 +13,8 @@ await context.addInitScript(() => {
   };
 });
 const page = await context.newPage();
-page.on("pageerror", (e) => console.log("PAGE ERROR", e.message));
+const errors = [];
+page.on("pageerror", (e) => errors.push(e.message));
 await page.goto("http://localhost:5173/consent");
 await page.getByRole("checkbox").nth(0).check();
 await page.getByRole("checkbox").nth(1).check();
@@ -27,6 +28,9 @@ for (const size of [
   { width: 375, height: 812 },
   { width: 390, height: 844 },
   { width: 430, height: 932 },
+  { width: 360, height: 800 },
+  { width: 768, height: 1024 },
+  { width: 1280, height: 800 },
   { width: 1440, height: 900 },
 ]) {
   await page.setViewportSize(size);
@@ -41,6 +45,13 @@ for (const size of [
     "/explore?tab=community",
     "/tasks",
     "/researcher-demo",
+    "/researcher-demo?view=projects",
+    "/card/3",
+    "/record/3",
+    "/contributions",
+    "/profile",
+    "/sites",
+    "/community/whisperwood?fallback=1",
   ]) {
     try {
       await page.goto("http://localhost:5173" + path);
@@ -68,4 +79,5 @@ for (const size of [
   }
   console.log("PASS upgraded layout " + size.width + "×" + size.height);
 }
+assert.deepEqual(errors, []);
 await browser.close();

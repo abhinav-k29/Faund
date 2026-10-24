@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -20,12 +20,13 @@ import {
   Target,
 } from "lucide-react";
 import { useApp } from "./context";
-import { Task, Observation, csvText } from "./store";
+import { Task, Observation, csvText, authorisedObservations } from "./store";
 import { species } from "./data";
 import { config } from "./config";
 import { Creature } from "./Art";
 import { World } from "./pages";
-import { ObservationDetails, SpeciesCard } from "./discovery";
+import { ObservationDetails } from "./observations";
+import { SpeciesCard } from "./cards";
 import { Button, Logo, Modal, Pill, Photo, dateLabel } from "./ui";
 import { ResearchProjects, ResearchMonitoring } from "./research-projects";
 function download(content: string, name: string, type: string) {
@@ -56,9 +57,24 @@ export function Researcher() {
   const [taxon, setTaxon] = useState("All");
   const [certainty, setCertainty] = useState("All");
   const [maxUncertainty, setMaxUncertainty] = useState("");
-  const authorised = state.observations.filter((o) =>
-    state.consents.some((c) => c.id === o.consentId && c.accepted),
+  const [limit, setLimit] = useState(50);
+  useEffect(
+    () => setLimit(50),
+    [
+      query,
+      category,
+      review,
+      task,
+      method,
+      area,
+      from,
+      to,
+      taxon,
+      certainty,
+      maxUncertainty,
+    ],
   );
+  const authorised = authorisedObservations(state);
   const rows = authorised.filter((o) => {
     const s = o.speciesId === null ? null : species[o.speciesId];
     return (
@@ -97,7 +113,7 @@ export function Researcher() {
   const sites = [
     ...new Set(rows.map((o) => (o.sensitive ? "Restricted area" : o.location))),
   ];
-  const selectedObs = state.observations.find((o) => o.id === selected);
+  const selectedObs = authorised.find((o) => o.id === selected);
   return (
     <div className="research-layout">
       <aside className="research-sidebar">
@@ -211,10 +227,7 @@ export function Researcher() {
                       <dd>{t.region}</dd>
                       <dt>Linked records</dt>
                       <dd>
-                        {
-                          state.observations.filter((o) => o.taskId === t.id)
-                            .length
-                        }
+                        {authorised.filter((o) => o.taskId === t.id).length}
                       </dd>
                     </dl>
                     <Button secondary onClick={() => setEdit({ ...t })}>
@@ -514,7 +527,7 @@ export function Researcher() {
                       />
                     </svg>
                   </div>
-                  {sites.map((s) => (
+                  {sites.slice(0, 8).map((s) => (
                     <p key={s}>
                       <MapPin size={14} />
                       {s}
@@ -529,6 +542,12 @@ export function Researcher() {
                       </strong>
                     </p>
                   ))}
+                  {sites.length > 8 && (
+                    <p className="footnote">
+                      Showing eight of {sites.length} generalised areas. Filter
+                      observations to inspect another area.
+                    </p>
+                  )}
                 </section>
               </div>
             )}
@@ -591,7 +610,7 @@ export function Researcher() {
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((o) => (
+                    {rows.slice(0, limit).map((o) => (
                       <tr key={o.id}>
                         <td>
                           <code>{o.id.slice(0, 10)}</code>
@@ -629,7 +648,16 @@ export function Researcher() {
                             {state.tasks.find((t) => t.id === o.taskId)
                               ?.title || "Casual observation"}
                           </small>
-                          {o.projectId && <button className="table-project-link" onClick={() => setView("Research Projects")}>{state.projects.find((p) => p.id === o.projectId)?.title || "Linked project"} <ArrowUpRight size={11} /></button>}
+                          {o.projectId && (
+                            <button
+                              className="table-project-link"
+                              onClick={() => setView("Research Projects")}
+                            >
+                              {state.projects.find((p) => p.id === o.projectId)
+                                ?.title || "Linked project"}{" "}
+                              <ArrowUpRight size={11} />
+                            </button>
+                          )}
                         </td>
                         <td>
                           {o.identification}
@@ -655,6 +683,17 @@ export function Researcher() {
                     ))}
                   </tbody>
                 </table>
+                {rows.length > limit && (
+                  <div className="load-more">
+                    <p>
+                      Showing {limit} of {rows.length} matching observations.
+                      CSV includes the complete filtered dataset.
+                    </p>
+                    <Button secondary onClick={() => setLimit((n) => n + 50)}>
+                      Show 50 More Observations
+                    </Button>
+                  </div>
+                )}
                 {!rows.length && (
                   <div className="empty">
                     <FlaskConical />
@@ -680,7 +719,7 @@ export function Researcher() {
         )}
         <footer className="research-footer">
           <Leaf size={16} />
-          {config.name} · development placeholder
+          {config.name} · local research demonstration
           <span>Discover → Record → Review → Understand</span>
         </footer>
       </main>
@@ -918,7 +957,8 @@ export function Showcase() {
               <span>03 / RESEARCH</span>
               <h2>A better question.</h2>
               <div className="flow-count">
-                <strong>{state.observations.length}</strong>local demo records
+                <strong>{authorisedObservations(state).length}</strong>submitted
+                demo records
               </div>
               <p>
                 Inspect, filter, review and export in the demonstration research
@@ -968,7 +1008,7 @@ export function Showcase() {
         </div>
       )}
       <footer>
-        <span>{config.name} · temporary development label</span>
+        <span>{config.name} · nature discovery prototype</span>
         <span>
           Concept prototype · local simulation · no verified conservation
           outcomes

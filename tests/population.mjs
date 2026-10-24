@@ -1,25 +1,45 @@
+import { permitResearch } from "./helpers.mjs";
 import { chromium, expect } from "@playwright/test";
 import { strict as assert } from "node:assert";
 import fs from "node:fs/promises";
 const browser = await chromium.launch({ headless: true });
-const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: "reduce" });
+const context = await browser.newContext({
+  viewport: { width: 390, height: 844 },
+  reducedMotion: "reduce",
+});
 await context.addInitScript(() => {
   const original = HTMLCanvasElement.prototype.getContext;
-  HTMLCanvasElement.prototype.getContext = function (type, ...args) { return type === "webgl2" ? null : original.call(this, type, ...args); };
+  HTMLCanvasElement.prototype.getContext = function (type, ...args) {
+    return type === "webgl2" ? null : original.call(this, type, ...args);
+  };
 });
 const page = await context.newPage();
 const errors = [];
 page.on("pageerror", (e) => errors.push(e.message));
-const go = async (url) => { await page.goto("http://localhost:5173" + url); await page.locator("h1").first().waitFor(); };
-const state = () => page.evaluate(() => JSON.parse(localStorage.getItem("nature-discovery-v1")));
+const go = async (url) => {
+  await page.goto("http://localhost:5173" + url);
+  await page.locator("h1").first().waitFor();
+};
+const state = () =>
+  page.evaluate(() => JSON.parse(localStorage.getItem("nature-discovery-v1")));
 // Anchor the fixed navigation at the foot of long presentation captures only.
 // Runtime UI retains its fixed mobile navigation.
-const capture = (name) => page.screenshot({ path: `presentation-assets/${name}.png`, fullPage: true, style: ".mobile-app { position: relative !important; } .bottom-nav { position: absolute !important; bottom: 0 !important; }" });
+const capture = (name) =>
+  page.screenshot({
+    path: `presentation-assets/${name}.png`,
+    fullPage: true,
+    style:
+      ".mobile-app { position: relative !important; } .bottom-nav { position: absolute !important; bottom: 0 !important; }",
+  });
 await fs.mkdir("presentation-assets", { recursive: true });
 await go("/collection");
 assert(page.url().endsWith("/consent"));
 await expect(page.getByRole("radio", { name: /Demo Explorer/ })).toBeChecked();
-assert.equal((await state()).observations.length, 0, "Consent must precede seed creation");
+assert.equal(
+  (await state()).observations.length,
+  0,
+  "Consent must precede seed creation",
+);
 await page.getByRole("checkbox").nth(0).check();
 await page.getByRole("checkbox").nth(1).check();
 await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
@@ -29,9 +49,11 @@ assert.equal(s.observations.length, 24);
 assert.equal(s.sites.length, 8);
 assert(s.observations.every((o) => o.consentId === s.consents.at(-1).id));
 assert.equal(new Set(s.observations.map((o) => o.method)).size, 3);
-assert.equal(new Set(s.observations.map((o) => o.review)).size, 3);
+assert.equal(new Set(s.observations.map((o) => o.review)).size, 4);
 assert.equal(new Set(s.observations.map((o) => o.notes)).size, 24);
-assert(s.observations.every((o) => new Date(o.createdAt) >= new Date(o.observedAt)));
+assert(
+  s.observations.every((o) => new Date(o.createdAt) >= new Date(o.observedAt)),
+);
 const migration = await page.evaluate(async () => {
   const { migrateState, emptyState } = await import("/src/store.ts");
   const current = JSON.parse(localStorage.getItem("nature-discovery-v1"));
@@ -40,51 +62,108 @@ const migration = await page.evaluate(async () => {
   const adopted = migrateState(oldEmpty);
   const explicitFresh = migrateState({ ...oldEmpty, startMode: "fresh" });
   const saved = migrateState({ ...current, xp: 777 });
-  return { adopted: adopted.observations.length, sameConsent: adopted.consents[0].id === current.consents[0].id, fresh: explicitFresh.observations.length, preserved: JSON.stringify(saved.observations) === JSON.stringify(current.observations) && saved.xp === 777 };
+  return {
+    adopted: adopted.observations.length,
+    sameConsent: adopted.consents[0].id === current.consents[0].id,
+    fresh: explicitFresh.observations.length,
+    preserved:
+      JSON.stringify(saved.observations) ===
+        JSON.stringify(current.observations) && saved.xp === 777,
+  };
 });
-assert.equal(migration.adopted, 24); assert(migration.sameConsent && migration.preserved); assert.equal(migration.fresh, 0);
-await expect(page.getByRole("link", { name: /Tasks & Research Missions/ })).toContainText("3 active");
+assert.equal(migration.adopted, 24);
+assert(migration.sameConsent && migration.preserved);
+assert.equal(migration.fresh, 0);
+await expect(
+  page.getByRole("link", { name: /Tasks & Research Missions/ }),
+).toContainText("3 active");
 await capture("25-populated-home");
 await go("/collection");
 await expect(page.locator(".collectible-preview")).toHaveCount(6);
-await expect(page.locator(".collectible-preview").filter({ hasText: "Blue-banded Bee" })).toContainText("Flip to Bumbloom");
+await expect(
+  page.locator(".collectible-preview").filter({ hasText: "Blue-banded Bee" }),
+).toContainText("Flip to Bumbloom");
 await capture("26-populated-species");
 await page.getByRole("button", { name: /Characters/ }).click();
 await expect(page.locator(".companion-tile")).toHaveCount(6);
-for (const pet of ["Pipwing", "Bumbloom", "Wattlet", "Bramblewisp", "Chuckleroot", "Mistleaf"]) {
+for (const pet of [
+  "Pipwing",
+  "Bumbloom",
+  "Wattlet",
+  "Bramblewisp",
+  "Chuckleroot",
+  "Mistleaf",
+]) {
   const card = page.locator(".companion-tile").filter({ hasText: pet });
-  await expect(card).toContainText("Level"); await expect(card).toContainText("Stage"); await expect(card).toContainText("Growth XP");
+  await expect(card).toContainText("Level");
+  await expect(card).toContainText("Stage");
+  await expect(card).toContainText("Growth XP");
 }
 await capture("27-populated-characters");
-console.log("PASS consent-first populated default, one shared 24-record dataset, six cards and owned companions");
+console.log(
+  "PASS consent-first populated default, one shared 24-record dataset, six cards and owned companions",
+);
 await go("/tasks");
-const pollinator = page.locator(".task-card").filter({ hasText: "Pollinator Watch" });
+const pollinator = page
+  .locator(".task-card")
+  .filter({ hasText: "Pollinator Watch" });
 await expect(pollinator).toContainText("80%");
-await expect(page.locator(".task-card").filter({ hasText: "Urban Tree Watch" }).getByRole("button", { name: "Completed", exact: true })).toBeDisabled();
+await expect(
+  page
+    .locator(".task-card")
+    .filter({ hasText: "Urban Tree Watch" })
+    .getByRole("button", { name: "Completed", exact: true }),
+).toBeDisabled();
 await pollinator.getByRole("link", { name: "Take Me There" }).click();
 await expect(page).toHaveURL(/\/map\?focus=site-b&task=pollinator/);
 await expect(page.locator("dialog")).toContainText("Recommended survey area");
 await expect(page.locator("dialog")).toContainText("Pollinator Watch");
 await expect(page.locator(".map-selected-record")).toHaveCount(4);
 const latest = page.locator(".map-selected-record").first();
-for (const text of ["Amegilla cingulata", "10:20 am", "Garden", "Seasonal Encounters", "Record sample-20", "Fourth visit"]) await expect(latest).toContainText(text, { ignoreCase: true });
+for (const text of [
+  "Amegilla cingulata",
+  "10:20 am",
+  "Garden",
+  "Seasonal Encounters",
+  "Record sample-20",
+  "Fourth visit",
+])
+  await expect(latest).toContainText(text, { ignoreCase: true });
 await page.getByRole("button", { name: "Close dialog" }).click();
 await expect(page.locator(".focused-pin")).toHaveCount(1);
-await expect(page.getByRole("region", { name: "Task destination" })).toContainText("Botanic Garden");
+await expect(
+  page.getByRole("region", { name: "Task destination" }),
+).toContainText("Botanic Garden");
 await capture("28-task-map-focus");
 await page.getByRole("button", { name: "Start Task Here" }).click();
 await expect(page).toHaveURL(/\/scan$/);
-await expect(page.getByRole("region", { name: "Bee demo field entry" })).toContainText("DEMO SUGGESTION");
-await page.getByRole("button", { name: "Compare similar species", exact: true }).click();
-await expect(page.locator("dialog")).toContainText("Several blue-banded bee species look similar");
+await expect(
+  page.getByRole("region", { name: "Bee demo field entry" }),
+).toContainText("DEMO SUGGESTION");
+await page
+  .getByRole("button", { name: "Compare similar species", exact: true })
+  .click();
+await expect(page.locator("dialog")).toContainText(
+  "Several blue-banded bee species look similar",
+);
 await page.getByRole("button", { name: "Close dialog" }).click();
-await page.locator(".bee-field-panel").screenshot({ path: "presentation-assets/29-bee-field-entry.png", style: ".bottom-nav { visibility: hidden; }" });
-await page.getByRole("button", { name: "Looks Right · Demo", exact: true }).click();
+await page.locator(".bee-field-panel").screenshot({
+  path: "presentation-assets/29-bee-field-entry.png",
+  style: ".bottom-nav { visibility: hidden; }",
+});
+await page
+  .getByRole("button", { name: "Looks Right · Demo", exact: true })
+  .click();
 await page.waitForURL("**/identify/3");
 await page.getByRole("button", { name: "Looks Right", exact: true }).click();
 await expect(page.getByLabel("Previously saved site")).toHaveValue("site-b");
-await page.getByLabel("Observation notes").fill("Presentation test: fifth flower-visitor visit to the same named site.");
+await page
+  .getByLabel("Observation notes")
+  .fill(
+    "Presentation test: fifth flower-visitor visit to the same named site.",
+  );
 await page.getByLabel("Date and time").fill("2026-10-22T14:20");
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/card/3");
 s = await state();
@@ -97,46 +176,81 @@ await page.getByRole("link", { name: "Inspect Bumbloom in 3D" }).click();
 await page.getByRole("button", { name: "Visit in My World" }).click();
 await expect(page.getByRole("button", { name: "Meet Bumbloom" })).toBeVisible();
 await go("/tasks");
-await expect(page.locator(".task-card").filter({ hasText: "Pollinator Watch" })).toContainText("100%");
+await expect(
+  page.locator(".task-card").filter({ hasText: "Pollinator Watch" }),
+).toContainText("100%");
 await go("/researcher-demo");
-await page.getByLabel("Filter task", { exact: true }).selectOption("pollinator");
+await page
+  .getByLabel("Filter task", { exact: true })
+  .selectOption("pollinator");
 await expect(page.locator("tbody tr")).toHaveCount(5);
-await expect(page.locator("tbody tr").first()).toContainText("Seasonal Encounters");
-console.log("PASS task focus, complete marker details, bee analysis/record/card/Bumbloom/world chain and shared researcher task progress");
+await expect(page.locator("tbody tr").first()).toContainText(
+  "Seasonal Encounters",
+);
+console.log(
+  "PASS task focus, complete marker details, bee analysis/record/card/Bumbloom/world chain and shared researcher task progress",
+);
 await go("/map");
 await page.getByRole("button", { name: "List", exact: true }).click();
-await expect(page.locator(".map-observation-list .observation-row")).toHaveCount(25);
-await expect(page.locator(".map-observation-list")).toContainText("Sensitive location withheld");
-await expect(page.locator(".map-observation-list .map-task-tag")).not.toHaveCount(0);
+await expect(
+  page.locator(".map-observation-list .observation-row"),
+).toHaveCount(25);
+await expect(page.locator(".map-observation-list")).toContainText(
+  "Sensitive location withheld",
+);
+await expect(
+  page.locator(".map-observation-list .map-task-tag"),
+).not.toHaveCount(0);
 await page.screenshot({ path: "presentation-assets/30-map-field-journal.png" });
 await go("/scan");
 await page.locator("input[type=file]").setInputFiles("public/images/0.jpg");
 await expect(page.locator(".bee-field-panel")).toHaveCount(0);
-await page.getByRole("button", { name: "Blue-banded Bee", exact: true }).click();
+await page
+  .getByRole("button", { name: "Blue-banded Bee", exact: true })
+  .click();
 await page.waitForURL("**/identify/3");
-assert((await page.locator(".result-photo .photo").getAttribute("src")).startsWith("data:image/jpeg"));
-console.log("PASS chronological map list and uploaded image retained on identification result");
+assert(
+  (await page.locator(".result-photo .photo").getAttribute("src")).startsWith(
+    "data:image/jpeg",
+  ),
+);
+console.log(
+  "PASS chronological map list and uploaded image retained on identification result",
+);
 await go("/profile");
 await page.getByRole("button", { name: "Fresh Explorer · Reset Demo" }).click();
 await page.getByRole("button", { name: "Reset Local Data" }).click();
 await page.waitForURL("http://localhost:5173/");
 await page.getByRole("button", { name: "Get Started", exact: true }).click();
 await expect(page.getByRole("radio", { name: /Fresh Explorer/ })).toBeChecked();
-await page.getByRole("checkbox").nth(0).check(); await page.getByRole("checkbox").nth(1).check();
+await page.getByRole("checkbox").nth(0).check();
+await page.getByRole("checkbox").nth(1).check();
 await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
 await page.waitForURL("**/home");
 assert.equal((await state()).observations.length, 0);
 await page.reload();
-assert.equal((await state()).observations.length, 0, "Fresh Explorer must not be silently populated on reload");
+assert.equal(
+  (await state()).observations.length,
+  0,
+  "Fresh Explorer must not be silently populated on reload",
+);
 await go("/tasks");
-await page.locator(".task-card").filter({ hasText: "Pollinator Watch" }).getByRole("link", { name: "Take Me There" }).click();
+await page
+  .locator(".task-card")
+  .filter({ hasText: "Pollinator Watch" })
+  .getByRole("link", { name: "Take Me There" })
+  .click();
 await expect(page.locator(".discovery-pin")).toHaveCount(0);
-await expect(page.getByRole("region", { name: "Task destination" })).toBeVisible();
+await expect(
+  page.getByRole("region", { name: "Task destination" }),
+).toBeVisible();
 await page.getByRole("button", { name: "Start Task Here" }).click();
 assert((await state()).sites.some((s) => s.id === "site-b"));
 await go("/home");
 await page.getByRole("button", { name: /Load Demo Explorer/ }).click();
 assert.equal((await state()).observations.length, 24);
 assert.equal(errors.length, 0, errors.join("\n"));
-console.log("PASS intentional Fresh Explorer reset and persistence, obvious reload-demo action, no runtime errors");
+console.log(
+  "PASS intentional Fresh Explorer reset and persistence, obvious reload-demo action, no runtime errors",
+);
 await browser.close();

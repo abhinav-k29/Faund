@@ -1,0 +1,91 @@
+[
+  {
+    "name": "Welcome 390",
+    "violations": []
+  },
+  {
+    "name": "Consent 390",
+    "violations": []
+  },
+  {
+    "name": "/home 390",
+    "violations": []
+  },
+  {
+    "name": "/scan 390",
+    "violations": []
+  },
+  {
+    "name": "/identify/3 390",
+    "violations": []
+  },
+  {
+    "name": "/record/3 390",
+    "violations": []
+  },
+  {
+    "name": "/card/3 390",
+    "violations": []
+  },
+  {
+    "name": "/collection 390",
+    "violations": []
+  },
+  {
+    "name": "/character/3?fallback=1 390",
+    "violations": []
+  },
+  {
+    "name": "/tasks 390",
+    "violations": []
+  },
+  {
+    "name": "/map 390",
+    "violations": []
+  },
+  {
+    "name": "/contributions 390",
+    "violations": []
+  },
+  {
+    "name": "/explore?fallback=1 390",
+    "violations": []
+  },
+  {
+    "name": "/profile 390",
+    "violations": []
+  },
+  {
+    "name": "Flipped card 390",
+    "violations": []
+  },
+  {
+    "name": "Task protocol dialog 390",
+    "violations": []
+  },
+  {
+    "name": "Private research permission 390",
+    "violations": []
+  },
+  {
+    "name": "Map dialog 390",
+    "violations": []
+  },
+  {
+    "name": "Research 1440",
+    "violations": []
+  },
+  {
+    "name": "Research projects 1440",
+    "violations": []
+  },
+  {
+    "name": "Research monitoring 1440",
+    "violations": []
+  },
+  {
+    "name": "Collection 200% desktop zoom equivalent · 640 CSS px / 1280 device px",
+    "violations": [],
+    "reflowOverflow": false
+  }
+]

@@ -1,0 +1,765 @@
+/* Wilsee refinement: preserve the established palette and organic surfaces. */
+:root {
+  --muted: #59695d;
+  --text-soft: #56674e;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --radius-control: 14px;
+  --radius-panel: 22px;
+  --motion-quick: 160ms;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  left: 16px;
+  top: -100px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: var(--forest);
+  color: white;
+}
+.skip-link:focus {
+  top: 12px;
+}
+.content:focus {
+  outline: none;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 1.15px;
+  color: var(--text-soft);
+}
+.footnote,
+.muted,
+.privacy-line,
+.map-caption,
+.map-privacy {
+  color: var(--text-soft);
+}
+.footnote {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.logo {
+  font-size: 18px;
+  letter-spacing: -0.5px;
+}
+.logo i {
+  font-size: 8px;
+  color: #56674e;
+  letter-spacing: 0.8px;
+}
+.button {
+  min-height: 48px;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+  transition:
+    background var(--motion-quick),
+    transform var(--motion-quick);
+}
+.button-row .button {
+  min-height: 46px;
+}
+.text-link {
+  min-height: 44px;
+}
+.icon-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+.pill {
+  font-size: 10px;
+  letter-spacing: 0.35px;
+}
+.tabs button {
+  min-height: 46px;
+  font-size: 13px;
+}
+.chips button {
+  min-height: 44px;
+  font-size: 12px;
+}
+.search input,
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+label {
+  line-height: 1.45;
+}
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--forest);
+}
+input:disabled,
+select:disabled {
+  opacity: 0.65;
+}
+.metadata {
+  gap: 11px 14px;
+  line-height: 1.5;
+}
+.metadata dt,
+.metadata dd {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.metadata dt {
+  color: var(--text-soft);
+}
+.greeting {
+  margin-bottom: 16px;
+}
+.greeting .eyebrow {
+  font-size: 10px;
+}
+.demo-journal-strip > span:last-child {
+  font-size: 10px;
+  color: var(--text-soft);
+}
+.demo-journal-strip .pill {
+  font-size: 9px;
+}
+.quest-preview {
+  margin: 0 0 18px;
+  padding: 15px;
+  background: #ebf0dc;
+  border-color: #bdce9e;
+  gap: 13px;
+}
+.quest-preview > span {
+  width: 43px;
+  height: 43px;
+  min-width: 43px;
+}
+.quest-preview-copy {
+  flex: 1;
+  min-width: 0;
+}
+.quest-preview-copy > .eyebrow {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  color: #50673e;
+}
+.quest-preview-copy h3 {
+  font-size: 17px;
+  line-height: 1.25;
+  margin: 5px 0 8px;
+}
+.quest-preview-copy p {
+  font-size: 11px;
+  color: #526848;
+  margin: 7px 0 0;
+}
+.quest-preview .progress {
+  height: 5px;
+  background: #d3ddbe;
+  margin: 0;
+}
+.world-card .world {
+  max-height: 235px;
+}
+.world-caption p,
+.world-stats span {
+  font-size: 12px;
+}
+.world-caption h2 {
+  font-size: 23px;
+}
+.discovery-cta p {
+  font-size: 12px;
+}
+.collection-summary {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-bottom: 18px;
+}
+.collection-summary a {
+  min-height: 35px;
+}
+.collectible-preview {
+  box-shadow: 0 5px 16px #28472c10;
+}
+.collectible-preview .mini-card-top {
+  font-size: 10px;
+  letter-spacing: 0;
+  padding: 8px;
+}
+.collectible-preview > .photo,
+.collectible-preview .tile-creature {
+  height: 165px;
+}
+.collectible-preview .tile-copy {
+  padding: 14px 10px 15px;
+}
+.collectible-preview .tile-copy .eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.8px;
+}
+.collectible-preview .tile-copy h3 {
+  font-size: 18px;
+  line-height: 1.2;
+  margin: 8px 0;
+}
+.collectible-preview .tile-copy p {
+  font-size: 12px;
+  margin: 7px 0;
+}
+.collectible-preview .tile-copy small {
+  font-size: 11px;
+  color: #56674e;
+}
+.collectible-preview .tile-connection {
+  font-size: 11px;
+  color: #45653d;
+  line-height: 1.45;
+}
+.collectible-preview .tile-task {
+  font-size: 10px;
+  color: #56674e;
+  line-height: 1.4;
+}
+.collectible-preview .tile-task svg {
+  flex: 0 0 11px;
+}
+.preview-companion {
+  top: 145px;
+  width: 51px;
+  height: 51px;
+}
+.preview-companion .creature {
+  width: 47px;
+  height: 47px;
+}
+.companion-tile .tile-connection {
+  color: #62527d;
+}
+.collection-tile .progress {
+  height: 5px;
+}
+.card-top {
+  font-size: 10px;
+}
+.card-description {
+  font-size: 13px;
+  line-height: 1.6;
+}
+.card-facts strong {
+  font-size: 13px;
+}
+.card-facts span,
+.card-footer {
+  font-size: 10px;
+}
+.species-card .pill {
+  font-size: 10px;
+}
+.record-species p {
+  font-size: 13px;
+}
+.immersive-camera {
+  height: 340px;
+  min-height: 300px;
+  border-radius: 24px;
+}
+.immersive-camera .camera-label {
+  font-size: 9px;
+}
+.camera-controls {
+  margin: 14px 0 18px;
+}
+.bee-field-panel .section-mini,
+.bee-research-note .eyebrow {
+  font-size: 10px;
+}
+.bee-field-panel .latin {
+  font-size: 14px;
+}
+.bee-field-panel h3 {
+  font-size: 15px;
+}
+.bee-entry-tags .pill {
+  font-size: 9px;
+}
+.bee-markers,
+.bee-fact,
+.bee-research-note p {
+  font-size: 13px;
+}
+.bee-field-panel .metadata dt,
+.bee-field-panel .metadata dd {
+  font-size: 12px;
+}
+.bee-field-panel .button-row .button {
+  font-size: 13px;
+  min-height: 47px;
+}
+.bee-compare,
+.bee-research-note a,
+.bee-companion-link {
+  font-size: 12px;
+}
+.bee-field-panel .footnote {
+  font-size: 11px;
+}
+.sample-grid button span {
+  font-size: 12px;
+}
+.research-permission-panel {
+  padding: 18px;
+  margin: 22px 0;
+  border: 1px solid #d0dcc0;
+  border-radius: 18px;
+  background: #eef2e4;
+}
+.research-permission-panel .section-title {
+  margin: 0 0 12px;
+}
+.research-permission-panel h3 {
+  font-size: 16px;
+}
+.research-permission-panel p,
+.permission-review p,
+.research-save-choice p {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.research-permission-panel .pill {
+  font-size: 9px;
+  max-width: 100%;
+}
+.permission-review {
+  border-top: 1px solid #ccd8bc;
+  margin-top: 16px;
+  padding-top: 15px;
+}
+.permission-review .checkbox {
+  align-items: flex-start;
+}
+.permission-review .checkbox span {
+  font-size: 13px;
+}
+.research-save-choice {
+  padding: 15px 17px;
+  background: #eef2e4;
+  border: 1px solid #d2ddc5;
+  border-radius: 16px;
+}
+.research-save-choice summary {
+  font-size: 14px;
+}
+.scene-container {
+  margin-bottom: 18px;
+}
+.scene-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+}
+.scene-toolbar > label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.scene-toolbar select {
+  width: 155px;
+  min-height: 44px;
+  padding: 7px 10px;
+  font-size: 12px;
+  border-radius: 12px;
+  background: #f3f2e8;
+}
+.scene-keyboard-controls {
+  display: flex;
+  justify-content: center;
+  gap: 9px;
+  margin: 10px 0 0;
+}
+.scene-keyboard-controls button {
+  border: 1px solid #d7dfcb;
+  background: #eef1e5;
+}
+.scene-stage .scene-hint {
+  font-size: 10px;
+  color: #526448;
+}
+.scene-fallback > span {
+  font-size: 11px;
+  color: #526448;
+}
+.scene-fallback .illustrated-companion {
+  position: absolute;
+  width: 29%;
+  bottom: 12%;
+  padding: 0;
+  border: 0;
+  background: none;
+}
+.scene-fallback .illustrated-companion .creature {
+  width: 100%;
+  height: auto;
+}
+.scene-fallback .illustrated-companion:disabled {
+  opacity: 1;
+}
+.viewer-controls > span,
+.character-switcher {
+  font-size: 12px;
+  color: #56674e;
+}
+.character-switcher select {
+  font-size: 13px;
+  min-height: 44px;
+}
+.character-growth p {
+  font-size: 13px;
+}
+.character-story {
+  margin: 18px 0;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.character-story h3 {
+  font-size: 16px;
+}
+.character-story p {
+  font-size: 14px;
+}
+.profile-companion > .creature {
+  width: 62px;
+  height: 62px;
+}
+.profile-companion strong {
+  font-size: 16px;
+}
+.biome-selector button {
+  min-height: 102px;
+}
+.biome-selector button small {
+  font-size: 10px;
+  color: #56674e;
+}
+.biome-count {
+  font-size: 10px;
+  color: #49613a;
+}
+.map-summary {
+  font-size: 12px;
+}
+.map-place-list small {
+  font-size: 11px;
+  color: #56674e;
+}
+.map-place-list > button {
+  min-height: 52px;
+}
+.map-observation-list .observation-row small,
+.map-task-tag {
+  font-size: 11px;
+}
+.map-focus-panel p {
+  font-size: 13px;
+}
+.map-focus-panel small {
+  font-size: 11px;
+  color: #526448;
+}
+.map-selected-record small {
+  font-size: 11px;
+  color: #56674e;
+}
+.map-selected-record p {
+  font-size: 13px;
+}
+.observation-row {
+  min-height: 86px;
+  text-align: left;
+}
+.observation-row h3 {
+  font-size: 15px;
+}
+.observation-row p,
+.observation-row small {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.load-more {
+  padding: 18px;
+  text-align: center;
+}
+.load-more p {
+  font-size: 13px;
+}
+.load-more .button {
+  max-width: 320px;
+  margin-inline: auto;
+}
+.table-project-link {
+  font-size: 11px;
+  min-height: 32px;
+}
+.research-header h1 {
+  font-size: 31px;
+}
+.research-header p {
+  font-size: 14px;
+}
+.research-main .demo-banner {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.research-stats small,
+.research-stats > div > span {
+  font-size: 12px;
+}
+.research-sidebar button {
+  min-height: 47px;
+}
+.research-filters select,
+.research-filters input {
+  font-size: 13px;
+  min-height: 44px;
+}
+.research-layout table td {
+  font-size: 12px;
+}
+.research-layout table small {
+  font-size: 11px;
+}
+.research-layout table th {
+  font-size: 11px;
+}
+.storage-recovery,
+.route-error {
+  margin: 20px;
+  padding: 22px;
+  border: 1px solid #d6b397;
+  border-radius: 20px;
+  background: #fff3df;
+}
+.storage-recovery h2 {
+  font-size: 23px;
+}
+.storage-recovery p,
+.route-error p {
+  font-size: 14px;
+}
+.route-error {
+  min-height: 40vh;
+}
+.metadata,
+.observation-row > div,
+.quest-preview-copy {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* Contrast corrections verified against Axe's rendered colour samples. */
+.welcome-logo > small {
+  font-size: 10px;
+  color: #526448;
+}
+.content small,
+.inline-card small,
+.observation-row small {
+  color: #526448;
+}
+.bottom-nav a {
+  color: #526448;
+}
+.bottom-nav small {
+  font-size: 11px;
+}
+.world-stats > span,
+.section-title > a,
+.map-summary > span {
+  color: #4d6444;
+}
+.tabs button {
+  color: #4d6046;
+}
+.progress-label,
+.character-growth .progress-label,
+.character-growth > p {
+  color: #5e4a74;
+  font-size: 12px;
+}
+.card-facts span {
+  color: #526448;
+}
+.task-banner p {
+  color: #5e4a74;
+}
+.research-task .task-card-head .pill {
+  color: #3d5d49;
+}
+.task-card-head .reward,
+.reward {
+  color: #4a652e;
+}
+.task-protocol-link {
+  color: #48633f;
+}
+.stat-grid > div > span {
+  font-size: 11px;
+  color: #526448;
+}
+.bee-field-panel .section-mini,
+.bee-markers,
+.bee-fact,
+.bee-companion-link {
+  color: #526448;
+}
+.bee-companion-link > span {
+  color: #665280;
+}
+.research-main small,
+.research-main td code,
+.research-main td .table-project-link,
+.research-stats > div > span {
+  color: #526448;
+}
+.research-user small,
+.research-main .demo-banner,
+.research-main .demo-banner span {
+  color: #526448;
+}
+.research-main p,
+.research-footer,
+.research-footer > span {
+  color: #526448;
+}
+.research-filters button,
+.research-filters select,
+.research-filters input,
+.research-layout table th,
+.bar-chart strong,
+.composition span {
+  color: #475b3f;
+}
+.filter-label > button,
+.research-filters .uncertainty-filter,
+.research-filters .date-filter {
+  color: #475b3f;
+  font-size: 12px;
+}
+.composition > div > span {
+  color: #475b3f;
+  font-size: 12px;
+}
+.task-project-label {
+  color: #355d4e;
+}
+.project-counts > span {
+  color: #526448;
+  font-size: 12px;
+}
+.research-filters {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.research-filters > *,
+.research-filters input,
+.research-filters select {
+  min-width: 0;
+  max-width: 100%;
+}
+.research-filters input,
+.research-filters select {
+  width: 100%;
+}
+.coverage p,
+.project-card h2,
+.task-card h2,
+.research-header h1 {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .research-filters .date-filter {
+    display: block;
+  }
+  .research-filters .date-filter input {
+    display: block;
+    margin-top: 6px;
+  }
+}
+@media (max-width: 380px) {
+  .content {
+    padding-inline: 16px;
+  }
+  .topbar {
+    padding-inline: 16px;
+  }
+  .logo i {
+    display: none;
+  }
+  .quest-preview {
+    padding: 13px;
+    gap: 10px;
+  }
+  .quest-preview-copy h3 {
+    font-size: 16px;
+  }
+  .quest-preview-copy p {
+    font-size: 10px;
+  }
+  .collectible-preview .tile-copy h3 {
+    font-size: 17px;
+  }
+  .collectible-preview .mini-card-top {
+    font-size: 10px;
+  }
+  .immersive-camera {
+    height: 300px;
+  }
+  .scene-toolbar {
+    gap: 6px;
+  }
+}
+@media (min-width: 600px) and (max-width: 849px) {
+  .app-shell {
+    max-width: 680px;
+    justify-content: center;
+  }
+  .mobile-app {
+    max-width: 680px;
+  }
+  .bottom-nav {
+    width: min(100%, 680px);
+  }
+  .collection-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .world-card .world {
+    max-height: 260px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+  .progress > span {
+    transition: none;
+  }
+}

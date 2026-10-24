@@ -9,7 +9,14 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { useApp } from "./context";
-import { Observation, ResearchProject, Task, uid, exampleSites } from "./store";
+import {
+  Observation,
+  ResearchProject,
+  Task,
+  uid,
+  exampleSites,
+  authorisedObservations,
+} from "./store";
 import { species } from "./data";
 import { Button, Modal, Pill, dateLabel } from "./ui";
 export function ResearchProjects({
@@ -65,7 +72,7 @@ export function ResearchProjects({
       <div className="research-project-grid">
         {state.projects.map((p) => {
           const tasks = state.tasks.filter((t) => t.projectId === p.id);
-          const records = state.observations.filter(
+          const records = authorisedObservations(state).filter(
             (o) => o.projectId === p.id || tasks.some((t) => t.id === o.taskId),
           );
           return (
@@ -100,7 +107,13 @@ export function ResearchProjects({
                     <button
                       className="text-link"
                       onClick={() => onRecords(t.id)}
-                      aria-label={"View linked records for " + t.title}
+                      aria-label={
+                        "View linked records for " +
+                        t.title +
+                        ": " +
+                        records.filter((o) => o.taskId === t.id).length +
+                        " observations"
+                      }
                     >
                       <BookOpen size={16} />{" "}
                       {records.filter((o) => o.taskId === t.id).length}
@@ -335,11 +348,23 @@ export function ResearchProjects({
             </label>
             <label>
               Recommended public survey area
-              <select value={task.recommendedSiteId || ""} onChange={(e) => setTask({ ...task, recommendedSiteId: e.target.value })}>
+              <select
+                value={task.recommendedSiteId || ""}
+                onChange={(e) =>
+                  setTask({ ...task, recommendedSiteId: e.target.value })
+                }
+              >
                 <option value="">No recommended area</option>
-                {exampleSites.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                {exampleSites.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
               </select>
-              <small>Opens a highlighted area in Map via Take Me There. No live navigation.</small>
+              <small>
+                Opens a highlighted area in Map via Take Me There. No live
+                navigation.
+              </small>
             </label>
             <label className="checkbox">
               <input

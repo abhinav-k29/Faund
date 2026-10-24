@@ -1,5 +1,5 @@
-﻿import React, { useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef, useId } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Leaf, X } from "lucide-react";
 import { config } from "./config";
 import { species } from "./data";
@@ -10,12 +10,9 @@ export function Button({
   secondary = false,
   disabled = false,
   type = "button",
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
+  ...props
+}: Omit<React.ButtonHTMLAttributes<HTMLButtonElement>, "className"> & {
   secondary?: boolean;
-  disabled?: boolean;
-  type?: "button" | "submit";
 }) {
   return (
     <button
@@ -23,6 +20,7 @@ export function Button({
       className={`button ${secondary ? "secondary" : ""}`}
       onClick={onClick}
       disabled={disabled}
+      {...props}
     >
       {children}
     </button>
@@ -47,9 +45,14 @@ export function Photo({
   className?: string;
 }) {
   const [error, setError] = React.useState(false);
+  useEffect(() => setError(false), [id]);
   const credit = imageSources[id];
   return error ? (
-    <div className={"photo placeholder " + className}>
+    <div
+      className={"photo placeholder " + className}
+      role="img"
+      aria-label={`${species[id]?.name || "Species"} photograph unavailable`}
+    >
       <Leaf />
       <span>Species image unavailable</span>
     </div>
@@ -61,7 +64,7 @@ export function Photo({
       alt={species[id].name}
       title={
         credit
-          ? `${credit.author} Â· ${credit.license} Â· Wikimedia Commons`
+          ? `${credit.author} · ${credit.license} · Wikimedia Commons`
           : undefined
       }
       onError={() => setError(true)}
@@ -138,12 +141,21 @@ export function Heading({
   back?: boolean;
 }) {
   const n = useNavigate();
+  const loc = useLocation();
   return (
     <header className="page-heading">
       {back && (
         <button
           className="icon-button back"
-          onClick={() => n(-1)}
+          onClick={() =>
+            window.history.state?.idx > 0
+              ? n(-1)
+              : n(
+                  /^\/(card|character)/.test(loc.pathname)
+                    ? "/collection"
+                    : "/home",
+                )
+          }
           aria-label="Go back"
         >
           <ArrowLeft />
@@ -165,22 +177,39 @@ export function Modal({
   onClose: () => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
-    ref.current?.showModal();
+    const dialog = ref.current;
+    const trigger =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    dialog?.showModal();
     return () => {
-      ref.current?.close();
+      dialog?.close();
+      if (trigger?.isConnected) trigger.focus({ preventScroll: true });
     };
   }, []);
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onCancel={onClose}
       onClick={(e) => {
-        if (e.target === ref.current) onClose();
+        const r = ref.current?.getBoundingClientRect();
+        if (
+          e.target === ref.current &&
+          r &&
+          (e.clientX < r.left ||
+            e.clientX > r.right ||
+            e.clientY < r.top ||
+            e.clientY > r.bottom)
+        )
+          onClose();
       }}
     >
       <div className="modal-head">
-        <h2>{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button
           autoFocus
           className="icon-button"
@@ -201,27 +230,70 @@ export const localTime = () => {
     .slice(0, 16);
 };
 export const dateLabel = (d: string) =>
-  new Date(d).toLocaleDateString("en-AU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  Number.isNaN(Date.parse(d))
+    ? "Date not recorded"
+    : new Date(d.length === 10 ? `${d}T12:00:00+10:00` : d).toLocaleDateString(
+        "en-AU",
+        {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+          timeZone: "Australia/Sydney",
+        },
+      );
 export async function readPhoto(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Choose an image file.");
+  if (!file.size)
+    throw new Error("This file is empty. Choose a valid photograph.");
+  if (file.type === "image/svg+xml")
+    throw new Error(
+      "Choose a photograph in JPEG, PNG, WebP or another supported raster image format.",
+    );
   if (file.size > 15 * 1024 * 1024)
     throw new Error("Choose a photo smaller than 15 MB.");
   const url = URL.createObjectURL(file);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const img = new Image();
   try {
-    const img = new Image();
     img.src = url;
-    await img.decode();
+    await Promise.race([
+      img.decode().catch(() => {
+        throw new Error(
+          "This image could not be read. Try a JPEG, PNG or WebP photograph.",
+        );
+      }),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Image processing took too long. Try a smaller photograph.",
+              ),
+            ),
+          10000,
+        );
+      }),
+    ]);
+    if (
+      !img.naturalWidth ||
+      !img.naturalHeight ||
+      img.naturalWidth * img.naturalHeight > 80000000
+    )
+      throw new Error("Choose a photograph smaller than 80 megapixels.");
     const c = document.createElement("canvas");
     const scale = Math.min(1, 1200 / Math.max(img.width, img.height));
     c.width = img.width * scale;
     c.height = img.height * scale;
-    c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+    const ctx = c.getContext("2d");
+    if (!ctx)
+      throw new Error(
+        "Image processing is unavailable in this browser. Try a demo sample.",
+      );
+    ctx.drawImage(img, 0, 0, c.width, c.height);
     return c.toDataURL("image/jpeg", 0.78);
   } finally {
+    if (timer) clearTimeout(timer);
+    img.src = "";
     URL.revokeObjectURL(url);
   }
 }

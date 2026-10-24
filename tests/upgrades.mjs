@@ -1,3 +1,4 @@
+import { permitResearch } from "./helpers.mjs";
 import { chromium, expect } from "@playwright/test";
 import { strict as assert } from "node:assert";
 import fs from "node:fs/promises";
@@ -327,6 +328,7 @@ for (let i = 0; i < 2; i++) {
     .getByLabel("Observation notes")
     .fill("Fictional repeat visit " + (i + 1) + "; no actual research event.");
   await page.getByLabel("Date and time").fill("2026-10-" + (20 + i) + "T10:30");
+  await permitResearch(page);
   await page.getByRole("button", { name: "Save Observation" }).click();
   await page.waitForURL("**/card/3");
 }
@@ -368,7 +370,7 @@ await page
 assert.equal(await page.locator("tbody tr").count(), 2);
 await page.getByLabel("Filter task", { exact: true }).selectOption("All");
 await page.getByLabel("Filter species", { exact: true }).selectOption("3");
-assert.equal(await page.locator("tbody tr").count(), 9);
+assert.equal(await page.locator("tbody tr").count(), 8);
 await page.getByLabel("Filter species", { exact: true }).selectOption("All");
 await page
   .getByLabel("Filter identification uncertainty")
@@ -385,7 +387,7 @@ const csv = await fs.readFile(
   "presentation-assets/example-upgraded-dataset.csv",
   "utf8",
 );
-assert.equal(csv.split("\r\n").length, 25);
+assert.equal(csv.split("\r\n").length, 24);
 assert(csv.includes("projectId"));
 assert(!csv.includes("decimalLatitude"));
 await page

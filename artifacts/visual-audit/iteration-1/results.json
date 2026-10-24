@@ -1,0 +1,218 @@
+{
+  "phase": "iteration-1",
+  "capturedAt": "2026-10-22T18:24:57.113Z",
+  "environment": "Windows / desktop Chromium; software WebGL, reduced motion",
+  "errors": [],
+  "timings": [
+    {
+      "route": "home",
+      "width": 1440,
+      "ms": 281,
+      "overflow": false
+    },
+    {
+      "route": "map",
+      "width": 1440,
+      "ms": 439,
+      "overflow": false
+    },
+    {
+      "route": "scan",
+      "width": 1440,
+      "ms": 141,
+      "overflow": false
+    },
+    {
+      "route": "collection",
+      "width": 1440,
+      "ms": 179,
+      "overflow": false
+    },
+    {
+      "route": "quests",
+      "width": 1440,
+      "ms": 109,
+      "overflow": false
+    },
+    {
+      "route": "world",
+      "width": 1440,
+      "ms": 233,
+      "overflow": false
+    },
+    {
+      "route": "research",
+      "width": 1440,
+      "ms": 422,
+      "overflow": false
+    },
+    {
+      "route": "home",
+      "width": 1280,
+      "ms": 140,
+      "overflow": false
+    },
+    {
+      "route": "map",
+      "width": 1280,
+      "ms": 387,
+      "overflow": false
+    },
+    {
+      "route": "scan",
+      "width": 1280,
+      "ms": 125,
+      "overflow": false
+    },
+    {
+      "route": "collection",
+      "width": 1280,
+      "ms": 134,
+      "overflow": false
+    },
+    {
+      "route": "quests",
+      "width": 1280,
+      "ms": 121,
+      "overflow": false
+    },
+    {
+      "route": "world",
+      "width": 1280,
+      "ms": 124,
+      "overflow": false
+    },
+    {
+      "route": "research",
+      "width": 1280,
+      "ms": 415,
+      "overflow": false
+    },
+    {
+      "route": "home",
+      "width": 768,
+      "ms": 136,
+      "overflow": false
+    },
+    {
+      "route": "map",
+      "width": 768,
+      "ms": 400,
+      "overflow": false
+    },
+    {
+      "route": "scan",
+      "width": 768,
+      "ms": 93,
+      "overflow": false
+    },
+    {
+      "route": "collection",
+      "width": 768,
+      "ms": 137,
+      "overflow": false
+    },
+    {
+      "route": "quests",
+      "width": 768,
+      "ms": 116,
+      "overflow": false
+    },
+    {
+      "route": "world",
+      "width": 768,
+      "ms": 144,
+      "overflow": false
+    },
+    {
+      "route": "research",
+      "width": 768,
+      "ms": 403,
+      "overflow": false
+    },
+    {
+      "route": "home",
+      "width": 390,
+      "ms": 149,
+      "overflow": false
+    },
+    {
+      "route": "map",
+      "width": 390,
+      "ms": 429,
+      "overflow": false
+    },
+    {
+      "route": "scan",
+      "width": 390,
+      "ms": 113,
+      "overflow": false
+    },
+    {
+      "route": "collection",
+      "width": 390,
+      "ms": 200,
+      "overflow": false
+    },
+    {
+      "route": "quests",
+      "width": 390,
+      "ms": 144,
+      "overflow": false
+    },
+    {
+      "route": "world",
+      "width": 390,
+      "ms": 186,
+      "overflow": false
+    },
+    {
+      "route": "research",
+      "width": 390,
+      "ms": 487,
+      "overflow": false
+    },
+    {
+      "route": "home",
+      "width": 360,
+      "ms": 228,
+      "overflow": false
+    },
+    {
+      "route": "map",
+      "width": 360,
+      "ms": 507,
+      "overflow": false
+    },
+    {
+      "route": "scan",
+      "width": 360,
+      "ms": 155,
+      "overflow": false
+    },
+    {
+      "route": "collection",
+      "width": 360,
+      "ms": 275,
+      "overflow": false
+    },
+    {
+      "route": "quests",
+      "width": 360,
+      "ms": 236,
+      "overflow": false
+    },
+    {
+      "route": "world",
+      "width": 360,
+      "ms": 259,
+      "overflow": false
+    },
+    {
+      "route": "research",
+      "width": 360,
+      "ms": 505,
+      "overflow": false
+    }
+  ]
+}

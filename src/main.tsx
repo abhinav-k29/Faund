@@ -23,24 +23,35 @@ import {
   UserRound,
   Map as MapIcon,
 } from "lucide-react";
-import { Context, Draft } from "./context";
+import { Context, Draft, draftKey, loadDraft } from "./context";
 import { config } from "./config";
 import { repository, activeConsent } from "./store";
 import { Logo, Credits } from "./ui";
+import { RouteBoundary, StorageRecovery } from "./recovery";
 import { Welcome, ConsentPage, Profile } from "./participation";
 import { Home, Explore as FieldGuide, Collection, Tasks, Sites } from "./pages";
 const DiscoveryMap = React.lazy(() =>
   import("./observation-map").then((m) => ({ default: m.DiscoveryMap })),
 );
 import { ExploreWorlds, CharacterPage, CommunityViewer } from "./worlds";
-import {
-  Scanner,
-  Identify,
-  Record,
-  CardPage,
-  Unlock,
-  Contributions,
-} from "./discovery";
+const Scanner = React.lazy(() =>
+  import("./scanner").then((m) => ({ default: m.Scanner })),
+);
+const Identify = React.lazy(() =>
+  import("./scanner").then((m) => ({ default: m.Identify })),
+);
+const Record = React.lazy(() =>
+  import("./record").then((m) => ({ default: m.Record })),
+);
+const CardPage = React.lazy(() =>
+  import("./cards").then((m) => ({ default: m.CardPage })),
+);
+const Unlock = React.lazy(() =>
+  import("./cards").then((m) => ({ default: m.Unlock })),
+);
+const Contributions = React.lazy(() =>
+  import("./observations").then((m) => ({ default: m.Contributions })),
+);
 const Researcher = React.lazy(() =>
   import("./research").then((m) => ({ default: m.Researcher })),
 );
@@ -49,6 +60,7 @@ const Showcase = React.lazy(() =>
 );
 import "./style.css";
 import "./upgrades.css";
+import "./polish.css";
 function Navigation() {
   const items = [
     ["/home", HomeIcon, "Home"],
@@ -81,6 +93,9 @@ function Gate() {
   if (!activeConsent(state)) return <Navigate to="/consent" replace />;
   return (
     <>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <div className="topbar">
         <Logo />
         <Link
@@ -91,7 +106,7 @@ function Gate() {
           <UserRound size={20} />
         </Link>
       </div>
-      <main className="content">
+      <main className="content" id="main-content" tabIndex={-1}>
         <Outlet />
       </main>
       <Navigation />
@@ -100,7 +115,7 @@ function Gate() {
 }
 function App() {
   const [state, setState] = useState(repository.load);
-  const [draft, setDraft] = useState<Draft>({});
+  const [draft, setDraft] = useState<Draft>(loadDraft);
   const [message, setMessage] = useState("");
   const loc = useLocation();
   useEffect(() => {
@@ -113,9 +128,27 @@ function App() {
   }, []);
   useEffect(() => {
     try {
-      repository.save(state);
+      if (!activeConsent(state)) {
+        sessionStorage.removeItem(draftKey);
+        if (Object.keys(draft).length) setDraft({});
+      } else if (Object.keys(draft).length)
+        sessionStorage.setItem(draftKey, JSON.stringify(draft));
+      else sessionStorage.removeItem(draftKey);
     } catch {
-      setMessage("Storage is full. Remove photo records or reset the demo.");
+      setMessage(
+        "This draft cannot survive a refresh because temporary browser storage is full. Your saved journal is unchanged.",
+      );
+    }
+  }, [draft, state.consents]);
+  useEffect(() => {
+    try {
+      repository.save(state);
+    } catch (error) {
+      setMessage(
+        error instanceof Error && state.recoveryRequired
+          ? error.message
+          : "Storage is full. Remove photo records or reset the demo.",
+      );
     }
   }, [state]);
   useEffect(() => {
@@ -157,42 +190,45 @@ function App() {
           </div>
         )}
         <div className={wide ? "" : "mobile-app"}>
-          <React.Suspense
-            fallback={
-              <div className="route-loading">
-                <Leaf size={28} />
-                <p>Opening a little wonder…</p>
-              </div>
-            }
-          >
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/consent" element={<ConsentPage />} />
-              <Route element={<Gate />}>
-                <Route path="/home" element={<Home />} />
-                <Route path="/map" element={<DiscoveryMap />} />
-                <Route path="/explore" element={<ExploreWorlds />} />
-                <Route path="/field-guide" element={<FieldGuide />} />
-                <Route path="/character/:id" element={<CharacterPage />} />
-                <Route path="/community/:id" element={<CommunityViewer />} />
-                <Route path="/scan" element={<Scanner />} />
-                <Route path="/identify/:id" element={<Identify />} />
-                <Route path="/record/:id" element={<Record />} />
-                <Route path="/card/:id" element={<CardPage />} />
-                <Route path="/unlock/:id" element={<Unlock />} />
-                <Route path="/collection" element={<Collection />} />
-                <Route path="/ecosystem" element={<ExploreWorlds />} />
-                <Route path="/tasks" element={<Tasks />} />
-                <Route path="/contributions" element={<Contributions />} />
-                <Route path="/sites" element={<Sites />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/credits" element={<Credits />} />
-              </Route>
-              <Route path="/researcher-demo" element={<Researcher />} />
-              <Route path="/showcase" element={<Showcase />} />
-              <Route path="*" element={<Navigate to="/" />} />
-            </Routes>
-          </React.Suspense>
+          <StorageRecovery />
+          <RouteBoundary resetKey={loc.pathname}>
+            <React.Suspense
+              fallback={
+                <div className="route-loading">
+                  <Leaf size={28} />
+                  <p>Opening a little wonder…</p>
+                </div>
+              }
+            >
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/consent" element={<ConsentPage />} />
+                <Route element={<Gate />}>
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/map" element={<DiscoveryMap />} />
+                  <Route path="/explore" element={<ExploreWorlds />} />
+                  <Route path="/field-guide" element={<FieldGuide />} />
+                  <Route path="/character/:id" element={<CharacterPage />} />
+                  <Route path="/community/:id" element={<CommunityViewer />} />
+                  <Route path="/scan" element={<Scanner />} />
+                  <Route path="/identify/:id" element={<Identify />} />
+                  <Route path="/record/:id" element={<Record />} />
+                  <Route path="/card/:id" element={<CardPage />} />
+                  <Route path="/unlock/:id" element={<Unlock />} />
+                  <Route path="/collection" element={<Collection />} />
+                  <Route path="/ecosystem" element={<ExploreWorlds />} />
+                  <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/contributions" element={<Contributions />} />
+                  <Route path="/sites" element={<Sites />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/credits" element={<Credits />} />
+                </Route>
+                <Route path="/researcher-demo" element={<Researcher />} />
+                <Route path="/showcase" element={<Showcase />} />
+                <Route path="*" element={<Navigate to="/" />} />
+              </Routes>
+            </React.Suspense>
+          </RouteBoundary>
         </div>
       </div>
       {message && (

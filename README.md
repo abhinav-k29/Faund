@@ -1,10 +1,10 @@
-# Nature Discovery
+# Wilsee
 
-A working mobile-first biodiversity discovery and research prototype. **Nature Discovery is a development placeholder**, not a final startup name. Change `src/config.ts` to rename the UI and PWA manifest.
+A working mobile-first biodiversity discovery and research prototype, formerly Faund. Wilsee preserves the existing nature aesthetic, routes and local records.
 
-The core journey is **Explore → Photograph / demo sample → Identify → Record → Learn → Collect → Research dataset**. The existing design and scientific workflow are preserved. The upgrade adds a private observation map, premium card previews, six original volumetric 3D companions, three interactive biomes, fictional Community Worlds and research project/task building.
+The core journey is **Explore → Photograph / demo sample → Identify → Record privately → Learn → Collect → Choose a research contribution**. It includes a private observation map, two-sided cards, six original volumetric 3D companions, three interactive biomes, fictional Community Worlds and research project/task building.
 
-The five navigation items are **Home | Map | Scan | Collection | Explore**. **Tasks** has prominent Home shortcuts and a link in Explore; it remains a core research feature. The previous species/habitat browser is preserved at **`/field-guide`**. **`/ecosystem`** opens the upgraded My World experience.
+The five navigation items are **Home | Map | Scan | Collection | Explore**. **Tasks** has a prominent active-mission shortcut near the Home greeting and a link in Explore; it remains a core research feature. The previous species/habitat browser is preserved at **`/field-guide`**. **`/ecosystem`** opens the upgraded My World experience.
 
 ## Start the app after restarting the laptop
 
@@ -19,6 +19,7 @@ Every time you want to use the app:
    Set-Location -LiteralPath 'C:\Users\abhin\OneDrive\Documents\Faund'
    npm.cmd run dev
    ```
+
 3. Wait until the terminal shows **Local: http://localhost:5173/**, then open that address in your browser.
 4. **Keep that terminal open while using the app.** The command keeps running; it does not return to the PowerShell prompt. Closing the terminal or pressing **Ctrl+C** stops the server.
 
@@ -38,14 +39,14 @@ You do not need to reinstall dependencies or run a production build after each r
 
 ### If it does not open
 
-| What you see                                                | What to do                                                                                                                                                                                      |
-| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `npm.ps1 cannot be loaded` / scripts are disabled         | Use `npm.cmd run dev`, exactly as above.                                                                                                                                                      |
-| `Could not read package.json` / `ENOENT`                | Run the `Set-Location` command above first. The terminal must be in this project's folder.                                                                                                    |
-| `vite` is not recognised or a dependency is missing       | Run `npm.cmd install` in the project folder, then `npm.cmd run dev`.                                                                                                                        |
-| Browser says it cannot connect / `ERR_CONNECTION_REFUSED` | Check that the server terminal is still open and shows the Local URL. Start it with the two commands above.                                                                                     |
+| What you see                                              | What to do                                                                                                                                                                              |
+| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm.ps1 cannot be loaded` / scripts are disabled         | Use `npm.cmd run dev`, exactly as above.                                                                                                                                                |
+| `Could not read package.json` / `ENOENT`                  | Run the `Set-Location` command above first. The terminal must be in this project's folder.                                                                                              |
+| `vite` is not recognised or a dependency is missing       | Run `npm.cmd install` in the project folder, then `npm.cmd run dev`.                                                                                                                    |
+| Browser says it cannot connect / `ERR_CONNECTION_REFUSED` | Check that the server terminal is still open and shows the Local URL. Start it with the two commands above.                                                                             |
 | `Port 5173 is already in use`                             | Open http://localhost:5173/ first: the app may already be running. If an old prototype server is running, stop it with **Ctrl+C in its own terminal**, then run `npm.cmd run dev` once. |
-| Browser shows `404 Not Found`                             | An incorrectly started Vite server may be treating a bare `5173` as a folder name. Stop that server with **Ctrl+C**, then run `npm.cmd run dev` from the project folder.              |
+| Browser shows `404 Not Found`                             | An incorrectly started Vite server may be treating a bare `5173` as a folder name. Stop that server with **Ctrl+C**, then run `npm.cmd run dev` from the project folder.                |
 
 If the port is occupied and you cannot find its terminal, these **read-only** PowerShell commands identify the process:
 
@@ -83,8 +84,8 @@ Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Verc
 
 ## Demonstration routes
 
-| Route                      | Purpose                                                                          |
-| -------------------------- | -------------------------------------------------------------------------------- |
+| Route                    | Purpose                                                                          |
+| ------------------------ | -------------------------------------------------------------------------------- |
 | `/`                      | Welcome and quick tour                                                           |
 | `/consent`               | Required adult participation agreement                                           |
 | `/home`                  | Discovery action, ecosystem and contribution summary                             |
@@ -98,7 +99,7 @@ Deploy `dist/` to an HTTPS static host such as Netlify, Cloudflare Pages or Verc
 | `/record/0`              | Structured observation form                                                      |
 | `/card/0`                | Real species / companion 3D card                                                 |
 | `/collection`            | Searchable private species and character collection                              |
-| `/ecosystem`             | Preserved direct entry to Explore → My World                                    |
+| `/ecosystem`             | Preserved direct entry to Explore → My World                                     |
 | `/tasks`                 | Research and exploration tasks                                                   |
 | `/contributions`         | Observation details, corrections and deletion                                    |
 | `/sites`                 | Repeat visits, timelines and concept comparison slider                           |
@@ -114,9 +115,9 @@ In **Research Projects**, create a project and publish a task with a question, t
 
 ## Data and consent
 
-The local repository (`src/store.ts`) separates consent, scientific observations, sites, task protocols and game progress. Saved observations reference a versioned consent record, contributor pseudonym, identification status, review status, provenance and observation method. The most recent consent decision controls participation. Withdrawal blocks future participation. Previous records remain locally accessible for correction/deletion through the researcher demonstration; this illustrates retention, not production legal policy.
+The local repository (`src/store.ts`) separates consent, scientific observations, sites, task protocols and game progress. Shared rules in `src/domain.ts` validate observations, prevent duplicate event/reward grants, reconcile deleted ownership and select research-eligible records. Saved observations reference a versioned agreement, contributor pseudonym, identification status, review status, provenance and method. The most recent agreement controls participation. Withdrawal blocks saving and research access. Existing v1.0 explorers review v1.1 while retaining their records and progress.
 
-Every saved observation enters both private history and the local authorised research dataset under the agreement. There is no second optional sharing switch. The researcher route is a **demonstration role**, accessible without real authentication; it is not a secure access-control boundary. Local storage is not encrypted. Use sample data, not confidential field observations.
+New observations default to the **private journal**. Separate, unchecked informed permission at capture or in **My Contributions → Review Research Submission** creates a local receipt. **Withdraw This Research Permission** removes the observation from researcher counts, details, project links and exports while retaining the journal and game progress. Demo Explorer has 24 fictional records: 23 submitted examples and one private example. Legacy records previously shared under v1.0 retain an explicitly labelled legacy receipt. The mandatory participation agreement remains required. The researcher route is a **demonstration role**, accessible without real authentication; this is local UI eligibility, not a production security boundary. Local storage is not encrypted.
 
 Photos are resized and re-encoded through canvas, removing source EXIF. They are saved locally in browser storage with records. Inputs are limited to 15 MB and resized to 1200 px; browser storage capacity remains limited (commonly a few MB). Quota failures are reported before advancing the save flow. A production repository should move photos to IndexedDB / secure object storage. No photos or geolocation are sent to an external service. Device location is requested only by an explicit one-time action. Exports omit exact coordinates entirely and withhold sensitive localities. Sensitive photos and free-text notes are withheld from the demo researcher detail view. Free text must not contain personal or confidential data.
 
@@ -126,7 +127,7 @@ CSV uses concepts such as occurrenceID, eventDate, scientificName, coordinateUnc
 
 The Leaflet map derives every observation pin and list entry from actual local records, grouping repeat sites. Sensitive records have no geographic pin and their list locality is withheld; records without coordinates remain in List. Coordinates are never invented from a location description. Task links use `/map?focus=site-b&task=pollinator` to highlight a recommended area and open existing visits. A recommended area without observations appears as an area circle, never a fabricated observation marker. Starting there retains the task and named site through recording. This is map focus, with no live directions or invented walking times. A local geographically anchored Sydney schematic works offline and is labelled **not for navigation**. Optional OpenStreetMap street tiles require an explicit action and internet access, display attribution, and reveal the viewed tile area to the tile provider. No observation payload is sent. External tiles are disabled while sensitive records are in the filtered view. No analytics or background tracking is enabled.
 
-The six companions are **real procedural 3D geometry**, not images on planes: Pipwing, Bumbloom, Wattlet, Bramblewisp, Chuckleroot and Mistleaf. The renderer is lazy-loaded React Three Fiber / Three.js with Drei orbit controls. Geometry is reusable across the viewer and biomes; no GLB files or remote model service is needed. Pixel ratio is capped at 1.5; rendering pauses offscreen/in background, and idle movement respects reduced motion. The original SVG art is retained as a clearly labelled fallback when WebGL2 is unavailable. Add `?fallback=1` to a character page to demonstrate it.
+The six companions use **procedural 3D geometry**: Pipwing, Bumbloom, Wattlet, Bramblewisp, Chuckleroot and Mistleaf. Plants use curved stems/trunks, leaves and supporting root tendrils; birds have distinct bills, wings and tails; the bee has six legs and four wings. All three stages have structural changes and matching SVG portraits. The lazy React Three Fiber / Three.js renderer needs no remote models. **Graphics** offers Balanced 3D (DPR ≤1.5), Lightweight 3D (DPR 1, no dynamic shadows) and Illustrated. Camera buttons support keyboard rotation/zoom. Pause, reduced motion, offscreen suspension and context-loss fallback are implemented. Add `?fallback=1` to demonstrate recovery artwork. See [companion art notes](docs/CHARACTER_ART.md).
 
 Lifetime Explorer XP stays in the existing `xp` field. Spendable `game.availableGrowthXP` and per-character growth are separate. Feeding costs ten Growth XP, cannot overdraw, never lowers Explorer level, and never changes scientific records or review state. Stage selectors preview fictional evolution without granting ownership or growth. Existing browser data uses the **same storage key**, with migration defaults preserving consent, observations, completed tasks and XP.
 
@@ -151,13 +152,21 @@ npm run test:quality
 npm run test:population
 npm run test:upgrades
 npm run test:responsive
+npm run test:unit
+npm run test:accessibility
+npm run test:privacy
+npm run test:stress
+npm run test:visual
+npm run format:check
 ```
 
 The original scientific-flow journey and camera/privacy quality tests remain. The upgrade suite additionally checks migration, map/list/filter consistency, all six rendered 3D models, drag/reset, evolution previews, feeding persistence and data isolation, biomes, fictional Community boundaries, project/task publication, linked repeated observations and example exports. Layout checks cover 375×812, 390×844, 430×932 and 1440×900. The core journey uses the SVG fallback to stay independent of GPU availability; the upgrade suite tests actual WebGL separately, then closes that browser before its research-data phase. Run suites sequentially on memory-constrained machines.
 
 Actual screenshots **14–24** cover the map, scanner, cards, 3D viewer, Meadow, Community and research tools. **25–30** document the populated Home, both Collection tabs, task-focused map, bee field entry and chronological map journal. Earlier assets remain available. Source checkpoints are **`checkpoints/before-worlds-upgrade.zip`** and **`checkpoints/before-population-polish.zip`**; they exclude dependencies and caches. See `docs/POPULATION_NOTES.md` for this pass.
 
-`tests/pwa.mjs` tests the production build’s manifest, service worker and offline reload when a preview server runs at port 4173. These automated checks use desktop Chromium. Physical iPhone Safari, actual device camera permissions, geolocation and Home Screen installation still need manual device verification. See `docs/VERIFICATION.md` for the recorded results.
+The Wilsee audit captures **1440×900, 1280×800, 768×1024, 390×844 and 360×800**. [Four-pass visual comparison](artifacts/visual-audit/comparison.html) links original screenshots; [quality report](docs/WILSEE_QUALITY_REPORT.md) records changes, test results, resource measurements and remaining limits. The new checkpoint is `checkpoints/before-wilsee-overhaul.zip`. Stress datasets use up to 500 fictional observations against the existing six-species catalogue.
+
+`tests/pwa.mjs` tests the production build’s manifest, service worker and offline reload when a preview server runs at port 4173. `npm.cmd run test:performance` also needs that preview server and records local production lab samples. Run `npm.cmd run build`, then `npm.cmd run preview -- --port 4173 --strictPort` in another terminal first. Automated checks use desktop Chromium. Physical iPhone Safari, actual device camera permissions, geolocation, assistive technology and Home Screen installation still need manual verification.
 
 ## Source organisation
 
@@ -166,16 +175,19 @@ Actual screenshots **14–24** cover the map, scanner, cards, 3D viewer, Meadow,
 - `src/data.ts`: six educational species records and source links.
 - `src/Art.tsx`: original vector characters and landscape.
 - `src/participation.tsx`: welcome, consent and profile.
-- `src/discovery.tsx`: capture, identification, recording, collectible and observation detail flows.
+- `src/domain.ts`: shared scientific validation, event/reward idempotency, ownership and permission rules.
+- `src/scanner.tsx`, `src/record.tsx`, `src/cards.tsx`, `src/observations.tsx`: lazy discovery routes; `src/discovery.tsx` keeps named re-exports for compatibility.
+- `src/research-permission.tsx`, `src/recovery.tsx`: submission receipts, withdrawal, route and storage recovery.
 - `src/pages.tsx`: home, explore, collection, ecosystem, tasks, sites.
 - `src/research.tsx`: researcher dashboard and showcase.
 - `src/research-projects.tsx`: project/task builder and research site monitoring.
 - `src/observation-map.tsx`, `public/sydney-map.svg`: private Leaflet map and offline schematic.
-- `src/scene.tsx`, `src/scene-canvas.tsx`: lazy renderer, six procedural models, habitats, camera and fallback.
+- `src/scene.tsx`, `src/scene-canvas.tsx`, `src/companion-models.tsx`: lazy renderer, six procedural models, habitats, camera, graphics settings and fallback.
+- `src/companion-data.ts`: distinct personalities and stage labels, consistently used across views.
 - `src/worlds.tsx`, `src/community-data.ts`: personal progression and isolated fictional public worlds.
 - `src/scan-analysis.tsx`: clearly scripted identification stages.
 - `src/bee-panel.tsx`: visible bee field entry, comparison guidance and discovery actions.
-- `src/upgrades.css`: additions to the existing design system.
+- `src/upgrades.css`, `src/polish.css`: additions and refinements to the existing design system.
 - `src/ui.tsx`, `src/style.css`: shared UI and central design tokens.
 
 React, TypeScript, Vite, React Router, Lucide, Motion, Three.js, React Three Fiber, Drei, Leaflet, plain token-based CSS, vite-plugin-pwa and Playwright. Font and photo assets are bundled locally; attribution is in `IMAGE_CREDITS.md` and `/credits`. Outfit and Fraunces use the SIL Open Font License. See `docs/UPGRADE_NOTES.md` for the file-by-file upgrade record.

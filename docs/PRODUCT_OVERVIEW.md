@@ -1,6 +1,6 @@
-# Nature Discovery — working product overview
+# Wilsee — working product overview
 
-Nature Discovery is a temporary development label for a proposed biodiversity discovery and research platform. Branding is not final. The prototype connects an enjoyable mobile nature experience with structured observation records and a demonstration researcher workspace.
+Wilsee, formerly Faund, connects an enjoyable mobile nature experience with structured observation records and a demonstration researcher workspace.
 
 The upgraded local prototype preserves its original interface and adds a private geographic observation map, six volumetric 3D companions, three interactive biomes and a curated fictional Community gallery. Tasks remain prominent on Home and connect to a project/task builder in the researcher workspace. Published protocols produce consent-linked observations with project and site associations, effort, uncertainty and review status; repeat-site summaries and example dataset exports use those same records. Community previews contain only fictional game assets, independently of the scientific dataset.
 
@@ -10,9 +10,9 @@ The project team's preliminary survey had 26 respondents, mostly students: 23 re
 
 Participants photograph organisms, select a clearly labelled demonstration identification, record observation details, learn about a species and unlock an original fictional companion. Their collection and illustrated ecosystem grow as they participate. Game rewards recognise activity; they do not certify scientific accuracy or ecological improvement.
 
-Research participation is fundamental to the model. Adult demonstration participants must affirm a versioned agreement before entering the observation app. Submitted observations link to that consent record and are stored in the same local dataset read by the researcher demonstration. Personal collections are private; research-data access is a separate controlled-access concept. The prototype illustrates this separation without implementing production authorisation.
+Research participation is fundamental to the model. Adult demonstration participants must affirm the versioned participation agreement before entering the observation app. New observations stay in a private journal. A separate informed confirmation creates a local research submission receipt; individual permission can be withdrawn while retaining the journal and game progress. Research views, project counts and exports select only eligible submitted records. Personal collections and Community game worlds are separate from scientific records. This is a local consent and eligibility demonstration without production authorisation.
 
-Researchers can inspect records, filter the dataset, view counts over time and category composition, simulate reviews, export a Darwin Core-aligned CSV, and edit two task protocols. Published tasks appear in the mobile app, and observations created through them retain a task link. Saved sites and visit timelines demonstrate repeat monitoring. An illustrative comparison slider explains the idea of visual change without claiming to measure biodiversity decline.
+Researchers can inspect eligible records, filter the dataset, view counts over time and category composition, simulate reviews, export a Darwin Core-aligned CSV, and create research projects and published task protocols. Published tasks appear in the mobile app, and observations created through them retain task, project, site and consent links. Saved sites and visit timelines demonstrate repeat monitoring. An illustrative comparison slider explains visual change without claiming to measure biodiversity decline.
 
 Potential applications include species occurrence studies, seasonal observation programmes, public-space tree monitoring and researcher-defined field surveys. Their usefulness would depend on study design, sampling bias, validation, governance and expert interpretation. Observation counts alone cannot establish abundance, population trends or conservation outcomes.
 

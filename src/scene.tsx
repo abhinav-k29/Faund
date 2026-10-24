@@ -1,8 +1,16 @@
 import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "motion/react";
-import { RotateCcw } from "lucide-react";
+import {
+  RotateCcw,
+  RotateCw,
+  ZoomIn,
+  ZoomOut,
+  Pause,
+  Play,
+} from "lucide-react";
 import { Creature, Landscape } from "./Art";
 import { BiomeId } from "./store";
+import { useApp } from "./context";
+import { species } from "./data";
 const SceneCanvas = lazy(() => import("./scene-canvas"));
 export type SceneProps = {
   characters: { id: number; stage: number }[];
@@ -10,6 +18,9 @@ export type SceneProps = {
   mode?: "character" | "world";
   onSelect?: (id: number) => void;
   interaction?: number;
+  quality?: "balanced" | "low";
+  onUnavailable?: () => void;
+  cameraCommand?: { id: number; action: "left" | "right" | "in" | "out" };
 };
 class SceneBoundary extends React.Component<
   {
@@ -31,6 +42,15 @@ class SceneBoundary extends React.Component<
   }
 }
 export function Scene(props: SceneProps) {
+  const { state, setState } = useApp();
+  const settings = state.visualSettings || {
+    quality: "balanced" as const,
+    paused: false,
+  };
+  const illustrated = settings.quality === "illustrated";
+  const [attempt, setAttempt] = useState(0);
+  const [cameraCommand, setCameraCommand] =
+    useState<SceneProps["cameraCommand"]>();
   const host = useRef<HTMLDivElement>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [visible, setVisible] = useState(true);
@@ -48,10 +68,19 @@ export function Scene(props: SceneProps) {
     const timer = setTimeout(() => setGrowthBurst(false), 1000);
     return () => clearTimeout(timer);
   }, [props.interaction]);
-  const reduced = !!useReducedMotion();
+  const [prefersReduced, setPrefersReduced] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setPrefersReduced(media.matches);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+  const reduced = prefersReduced || settings.paused;
   useEffect(() => {
     try {
-      if (new URLSearchParams(location.search).has("fallback")) {
+      if (illustrated || new URLSearchParams(location.search).has("fallback")) {
         setAvailable(false);
         return;
       }
@@ -62,7 +91,15 @@ export function Scene(props: SceneProps) {
     } catch {
       setAvailable(false);
     }
-  }, []);
+  }, [illustrated, attempt]);
+  useEffect(() => {
+    if (!available) return;
+    const timeout = setTimeout(() => {
+      if (!host.current?.querySelector('[data-scene-ready="true"]'))
+        setAvailable(false);
+    }, 15000);
+    return () => clearTimeout(timeout);
+  }, [available, attempt]);
   useEffect(() => {
     const el = host.current;
     if (!el) return;
@@ -85,71 +122,179 @@ export function Scene(props: SceneProps) {
   const fallback = (
     <div className="scene-fallback">
       <Landscape>
-        {props.characters.map((c, i) => (
-          <button
-            key={c.id}
-            style={{ left: 8 + i * 24 + "%" }}
-            onClick={() => props.onSelect?.(c.id)}
-            aria-label={"Select illustrated companion " + c.id}
-          >
-            <Creature kind={c.id} stage={c.stage} />
-          </button>
-        ))}
+        {props.characters.map((c, i) =>
+          props.onSelect ? (
+            <button
+              className="illustrated-companion"
+              key={c.id}
+              style={{ left: 8 + i * 24 + "%" }}
+              onClick={() => props.onSelect?.(c.id)}
+              aria-label={`Select ${species[c.id]?.pet || "companion"}, stage ${c.stage}`}
+            >
+              <Creature kind={c.id} stage={c.stage} />
+            </button>
+          ) : (
+            <div
+              className="illustrated-companion"
+              key={c.id}
+              style={{ left: 8 + i * 24 + "%" }}
+              role="img"
+              aria-label={`${species[c.id]?.pet || "Companion"}, stage ${c.stage}`}
+            >
+              <Creature kind={c.id} stage={c.stage} />
+            </div>
+          ),
+        )}
       </Landscape>
-      <span>3D unavailable · illustrated fallback</span>
+      <span>
+        {illustrated
+          ? "Illustrated view · original companion artwork"
+          : "3D unavailable · illustrated fallback"}
+      </span>
     </div>
   );
   return (
-    <div
-      className={
-        (growthBurst ? "growth-reaction " : "") +
-        "scene-stage " +
-        (props.mode === "world" ? "world-stage" : "portrait-stage")
+    <section
+      className="scene-container"
+      aria-label={
+        props.mode === "world"
+          ? "Interactive companion world"
+          : "Companion viewer"
       }
-      ref={host}
     >
-      {growthBurst && (
-        <span className="growth-burst" role="status">
-          +10 Growth XP ✦
+      <div
+        className={
+          (growthBurst ? "growth-reaction " : "") +
+          "scene-stage " +
+          (props.mode === "world" ? "world-stage" : "portrait-stage")
+        }
+        ref={host}
+      >
+        {growthBurst && (
+          <span className="growth-burst" role="status">
+            +10 Growth XP ✦
+          </span>
+        )}
+        {available === false ? (
+          fallback
+        ) : available === null ? (
+          <div className="scene-loading">Preparing a little wonder…</div>
+        ) : (
+          <SceneBoundary
+            key={attempt}
+            fallback={fallback}
+            onFailure={() => setAvailable(false)}
+          >
+            <Suspense
+              fallback={
+                <div className="scene-loading">
+                  Bringing your world to life…
+                </div>
+              }
+            >
+              <SceneCanvas
+                {...props}
+                visible={visible}
+                reduced={reduced}
+                reset={reset}
+                quality={settings.quality === "low" ? "low" : "balanced"}
+                cameraCommand={cameraCommand}
+                onUnavailable={() => setAvailable(false)}
+              />
+            </Suspense>
+          </SceneBoundary>
+        )}
+        {available && (
+          <button
+            className="scene-reset icon-button"
+            aria-label="Reset 3D camera"
+            onClick={() => setReset((r) => r + 1)}
+          >
+            <RotateCcw size={17} />
+          </button>
+        )}
+        <span className="scene-hint">
+          {available
+            ? "Drag to rotate · pinch to zoom"
+            : "Original character illustration"}
         </span>
-      )}
-      {available === false ? (
-        fallback
-      ) : available === null ? (
-        <div className="scene-loading">Preparing a little wonder…</div>
-      ) : (
-        <SceneBoundary
-          fallback={fallback}
-          onFailure={() => setAvailable(false)}
-        >
-          <Suspense
-            fallback={
-              <div className="scene-loading">Bringing your world to life…</div>
+      </div>
+      <div className="scene-toolbar">
+        <label>
+          Graphics
+          <select
+            aria-label="Graphics quality"
+            value={settings.quality}
+            onChange={(e) =>
+              setState((s) => ({
+                ...s,
+                visualSettings: {
+                  ...settings,
+                  quality: e.target.value as "balanced" | "low" | "illustrated",
+                },
+              }))
             }
           >
-            <SceneCanvas
-              {...props}
-              visible={visible}
-              reduced={reduced}
-              reset={reset}
-            />
-          </Suspense>
-        </SceneBoundary>
-      )}
+            <option value="balanced">Balanced 3D</option>
+            <option value="low">Lightweight 3D</option>
+            <option value="illustrated">Illustrated</option>
+          </select>
+        </label>
+        {available && !prefersReduced && (
+          <button
+            className="icon-button"
+            aria-label={
+              settings.paused ? "Resume animations" : "Pause animations"
+            }
+            aria-pressed={settings.paused}
+            onClick={() =>
+              setState((s) => ({
+                ...s,
+                visualSettings: { ...settings, paused: !settings.paused },
+              }))
+            }
+          >
+            {settings.paused ? <Play size={17} /> : <Pause size={17} />}
+          </button>
+        )}
+        {!available && !illustrated && (
+          <button
+            className="text-link"
+            onClick={() => {
+              setAvailable(null);
+              setAttempt((a) => a + 1);
+            }}
+          >
+            Try 3D Again
+          </button>
+        )}
+      </div>
       {available && (
-        <button
-          className="scene-reset icon-button"
-          aria-label="Reset 3D camera"
-          onClick={() => setReset((r) => r + 1)}
+        <div
+          className="scene-keyboard-controls"
+          aria-label="3D camera controls"
         >
-          <RotateCcw size={17} />
-        </button>
+          {(
+            [
+              ["left", "Rotate left", RotateCcw],
+              ["right", "Rotate right", RotateCw],
+              ["in", "Zoom in", ZoomIn],
+              ["out", "Zoom out", ZoomOut],
+            ] as const
+          ).map(([action, label, Icon]) => (
+            <button
+              key={action}
+              className="icon-button"
+              aria-label={label}
+              onClick={() =>
+                setCameraCommand((c) => ({ id: (c?.id || 0) + 1, action }))
+              }
+            >
+              <Icon size={17} />
+            </button>
+          ))}
+        </div>
       )}
-      <span className="scene-hint">
-        {available
-          ? "Drag to rotate · pinch to zoom"
-          : "Original character illustration"}
-      </span>
-    </div>
+    </section>
   );
 }

@@ -1,0 +1,148 @@
+{
+  "capturedAt": "2026-10-22T19:09:58.812Z",
+  "environment": "Windows desktop Chromium; software WebGL via SwiftShader, not physical phone performance",
+  "datasets": [
+    {
+      "observations": 0,
+      "catalogueSpecies": 6,
+      "journalMs": 446,
+      "mapMs": 394,
+      "researchMs": 396,
+      "collectionMs": 93
+    },
+    {
+      "observations": 1,
+      "catalogueSpecies": 6,
+      "journalMs": 395,
+      "mapMs": 389,
+      "researchMs": 386,
+      "collectionMs": 112
+    },
+    {
+      "observations": 20,
+      "catalogueSpecies": 6,
+      "journalMs": 395,
+      "mapMs": 398,
+      "researchMs": 392,
+      "collectionMs": 126
+    },
+    {
+      "observations": 100,
+      "catalogueSpecies": 6,
+      "journalMs": 399,
+      "mapMs": 399,
+      "researchMs": 414,
+      "collectionMs": 116
+    },
+    {
+      "observations": 500,
+      "catalogueSpecies": 6,
+      "journalMs": 404,
+      "mapMs": 454,
+      "researchMs": 440,
+      "collectionMs": 138
+    }
+  ],
+  "checks": [
+    "0 observations: journal/map/research/collection counts, bounded rows and full CSV",
+    "1 observations: journal/map/research/collection counts, bounded rows and full CSV",
+    "20 observations: journal/map/research/collection counts, bounded rows and full CSV",
+    "100 observations: journal/map/research/collection counts, bounded rows and full CSV",
+    "500 observations: journal/map/research/collection counts, bounded rows and full CSV",
+    "31 rapid flips retain parity and refresh state; ten modal cycles restore focus; skip link and invalid routes",
+    "empty/corrupt/wrong-type/SVG/oversized/repeated/wide uploads; latest upload wins; draft photo refresh; analysis cancellation; stale camera tracks stop",
+    "explicit permission receipt and withdrawal update the other tab and CSV without deleting the journal/XP; curated Community contains no scientific records",
+    "partial/unknown metadata, long untrusted text, corrupted-data preservation, missing photo and failed street tiles recover honestly",
+    "all six models and stages; 60 warmed model switches; renderer/heap bounds; keyboard camera; graphics fallback; five resizes; context loss/retry; six scene exits; persistent pause"
+  ],
+  "models": [
+    {
+      "id": 0,
+      "drawCalls": "94",
+      "triangles": "26810",
+      "geometries": "16",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    },
+    {
+      "id": 1,
+      "drawCalls": "88",
+      "triangles": "24218",
+      "geometries": "19",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    },
+    {
+      "id": 2,
+      "drawCalls": "136",
+      "triangles": "54802",
+      "geometries": "43",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    },
+    {
+      "id": 3,
+      "drawCalls": "125",
+      "triangles": "38114",
+      "geometries": "60",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    },
+    {
+      "id": 4,
+      "drawCalls": "102",
+      "triangles": "26962",
+      "geometries": "72",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    },
+    {
+      "id": 5,
+      "drawCalls": "132",
+      "triangles": "33666",
+      "geometries": "96",
+      "textures": "4",
+      "frameMs": "0",
+      "stages": "3"
+    }
+  ],
+  "errors": [],
+  "modelStress": {
+    "switches": 60,
+    "warm": {
+      "resources": {
+        "drawCalls": "132",
+        "triangles": "33666",
+        "geometries": "96",
+        "textures": "4",
+        "frameMs": "0",
+        "stages": "3"
+      },
+      "heapBytes": 41985644
+    },
+    "after": {
+      "resources": {
+        "drawCalls": "132",
+        "triangles": "33666",
+        "geometries": "96",
+        "textures": "4",
+        "frameMs": "0",
+        "stages": "3"
+      },
+      "heapBytes": 43117644
+    }
+  },
+  "animatedSoftwareFrame": {
+    "drawCalls": "104",
+    "triangles": "26090",
+    "geometries": "23",
+    "textures": "4",
+    "frameMs": "36.51",
+    "stages": "2"
+  }
+}

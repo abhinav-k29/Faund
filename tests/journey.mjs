@@ -1,3 +1,4 @@
+import { permitResearch } from "./helpers.mjs";
 import { chromium } from "@playwright/test";
 import { strict as assert } from "node:assert";
 import fs from "node:fs/promises";
@@ -62,6 +63,7 @@ await page
   .getByLabel("Observation notes")
   .fill("Example sighting from a safe public path.");
 await page.screenshot({ path: "presentation-assets/04-observation.png" });
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/unlock/0");
 let s = await state();
@@ -84,6 +86,7 @@ console.log(
   "PASS discovery, consent provenance, character unlock, card flip, ecosystem and persistence",
 );
 await go("/record/0");
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/card/0");
 s = await state();
@@ -91,6 +94,7 @@ assert.equal(s.observations.length, 2);
 assert.equal(new Set(s.observations.map((o) => o.speciesId)).size, 1);
 await go("/identify/1");
 await page.getByRole("button", { name: "Not Sure" }).click();
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/contributions");
 assert.equal((await state()).observations.at(-1).speciesId, null);
@@ -144,6 +148,7 @@ await page
 await page
   .getByLabel("Observation notes")
   .fill("Demo foliage observation; canopy appears green.");
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/unlock/5");
 assert.equal((await state()).observations.at(-1).taskId, "tree");

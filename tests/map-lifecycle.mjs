@@ -1,5 +1,35 @@
-import {chromium} from '@playwright/test';
-import {strict as assert} from 'node:assert';
-const browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}});const errors=[];page.on('pageerror',e=>errors.push(e.stack));await page.goto('http://localhost:5173/consent');await page.getByRole('checkbox').nth(0).check();await page.getByRole('checkbox').nth(1).check();await page.getByRole('button',{name:'I Agree — Start Exploring'}).click();await page.getByRole('navigation').waitFor();await page.goto('http://localhost:5173/profile');await page.getByRole('button',{name:'Load Demo Explorer'}).click();await page.getByRole('button',{name:'Load Demo Records'}).click();
-for(let i=0;i<12;i++){await page.getByRole('navigation').getByRole('link',{name:'Map',exact:true}).click();await page.locator('.leaflet-control-zoom-in').click();await page.getByRole('button',{name:'List',exact:true}).click();await page.getByRole('button',{name:'Map',exact:true}).click();await page.locator('.leaflet-control-zoom-out').click();await page.getByRole('navigation').getByRole('link',{name:'Home',exact:true}).click();await page.getByRole('heading',{name:'Hey, Explorer.'}).waitFor()}
-await page.waitForTimeout(300);assert.equal(errors.length,0,errors.join('\n'));console.log('PASS repeated map zoom, Map/List switching and route cleanup without runtime errors');await browser.close();
+import { chromium } from "@playwright/test";
+import { strict as assert } from "node:assert";
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+const errors = [];
+page.on("pageerror", (e) => errors.push(e.stack));
+await page.goto("http://localhost:5173/consent");
+await page.getByRole("checkbox").nth(0).check();
+await page.getByRole("checkbox").nth(1).check();
+await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
+await page.getByRole("navigation").waitFor();
+await page.goto("http://localhost:5173/profile");
+await page.getByRole("button", { name: "Load Demo Explorer" }).click();
+await page.getByRole("button", { name: "Load Demo Records" }).click();
+for (let i = 0; i < 12; i++) {
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Map", exact: true })
+    .click();
+  await page.locator(".leaflet-control-zoom-in").click();
+  await page.getByRole("button", { name: "List", exact: true }).click();
+  await page.getByRole("button", { name: "Map", exact: true }).click();
+  await page.locator(".leaflet-control-zoom-out").click();
+  await page
+    .getByRole("navigation")
+    .getByRole("link", { name: "Home", exact: true })
+    .click();
+  await page.getByRole("heading", { name: "Hey, Explorer." }).waitFor();
+}
+await page.waitForTimeout(300);
+assert.equal(errors.length, 0, errors.join("\n"));
+console.log(
+  "PASS repeated map zoom, Map/List switching and route cleanup without runtime errors",
+);
+await browser.close();

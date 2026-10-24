@@ -17,7 +17,7 @@ import { useApp } from "./context";
 import { Observation, exampleSites } from "./store";
 import { species } from "./data";
 import { Button, Heading, Modal, Photo, Pill, dateLabel } from "./ui";
-import { ObservationDetails } from "./discovery";
+import { ObservationDetails } from "./observations";
 type Pin = {
   key: string;
   lat: number;
@@ -28,22 +28,35 @@ type Pin = {
 function category(o: Observation) {
   return o.speciesId === null ? "Unidentified" : species[o.speciesId].category;
 }
-const observationTime = (o: Observation) => new Date(o.observedAt).toLocaleTimeString("en-AU", { hour: "2-digit", minute: "2-digit", timeZone: "Australia/Sydney", timeZoneName: "short" });
+const observationTime = (o: Observation) =>
+  new Date(o.observedAt).toLocaleTimeString("en-AU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Australia/Sydney",
+    timeZoneName: "short",
+  });
 function periodFor(o: Observation) {
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Sydney" });
+  const today = new Date().toLocaleDateString("en-CA", {
+    timeZone: "Australia/Sydney",
+  });
   const date = o.observedAt.slice(0, 10);
   if (date === today) return "Today";
   const week = new Date(today + "T12:00:00");
   week.setDate(week.getDate() - ((week.getDay() + 6) % 7));
-  if (date >= week.toLocaleDateString("en-CA") && date <= today) return "This Week";
-  return date.slice(0, 7) === today.slice(0, 7) ? "Earlier This Month" : "Earlier Field Notes";
+  if (date >= week.toLocaleDateString("en-CA") && date <= today)
+    return "This Week";
+  return date.slice(0, 7) === today.slice(0, 7)
+    ? "Earlier This Month"
+    : "Earlier Field Notes";
 }
 export function DiscoveryMap() {
   const { state, setState, setDraft } = useApp();
   const n = useNavigate();
   const [params] = useSearchParams();
   const focus = params.get("focus") || "";
-  const mission = state.tasks.find((t) => t.id === params.get("task") && t.status === "Published");
+  const mission = state.tasks.find(
+    (t) => t.id === params.get("task") && t.status === "Published",
+  );
   const [view, setView] = useState("Map");
   const [search, setSearch] = useState("");
   const [cat, setCat] = useState("All");
@@ -54,6 +67,10 @@ export function DiscoveryMap() {
   const [tiles, setTiles] = useState(false);
   const [tileError, setTileError] = useState(false);
   const [more, setMore] = useState(false);
+  const [limit, setLimit] = useState(50);
+  const [visitLimit, setVisitLimit] = useState(20);
+  useEffect(() => setLimit(50), [search, cat, from, to]);
+  useEffect(() => setVisitLimit(20), [selected]);
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const rows = useMemo(
@@ -97,11 +114,27 @@ export function DiscoveryMap() {
     return [...grouped.values()];
   }, [rows, state.sites]);
   const restricted = rows.some((o) => o.sensitive);
+  const visibleRows = useMemo(
+    () =>
+      [...rows]
+        .sort((a, b) => b.observedAt.localeCompare(a.observedAt))
+        .slice(0, limit),
+    [rows, limit],
+  );
   const chosen = pins.find((p) => p.key === selected);
   const observation = state.observations.find((o) => o.id === detail);
-  const focusSite = state.sites.find((s) => s.id === focus && (pins.some((p) => p.key === s.id) || exampleSites.some((e) => e.id === s.id))) || exampleSites.find((s) => s.id === focus);
+  const focusSite =
+    state.sites.find(
+      (s) =>
+        s.id === focus &&
+        (pins.some((p) => p.key === s.id) ||
+          exampleSites.some((e) => e.id === s.id)),
+    ) || exampleSites.find((s) => s.id === focus);
   useEffect(() => {
-    if (focus) { setSelected(focus); setView("Map"); }
+    if (focus) {
+      setSelected(focus);
+      setView("Map");
+    }
   }, [focus, params.get("task")]);
   useEffect(() => {
     if (view !== "Map" || !host.current) return;
@@ -149,7 +182,8 @@ export function DiscoveryMap() {
               ? "plant-pin"
               : c === "Birds"
                 ? "bird-pin"
-              : "other-pin") + (p.key === focus ? " focused-pin" : ""),
+                : "other-pin") +
+          (p.key === focus ? " focused-pin" : ""),
         html: `<span><b>${p.records.length > 1 ? p.records.length : c === "Birds" ? "B" : c === "Plants" ? "P" : c === "Insects" ? "I" : "?"}</b></span>`,
         iconSize: [38, 44],
         iconAnchor: [19, 40],
@@ -178,9 +212,17 @@ export function DiscoveryMap() {
     const m = map.current;
     if (!m || !focusSite?.coordinates) return;
     const { lat, lon } = focusSite.coordinates;
-    const area = L.circle([lat, lon], { radius: Math.max(120, focusSite.uncertainty), color: "#627d43", fillColor: "#d2f078", fillOpacity: 0.3, weight: 2 }).addTo(m);
+    const area = L.circle([lat, lon], {
+      radius: Math.max(120, focusSite.uncertainty),
+      color: "#627d43",
+      fillColor: "#d2f078",
+      fillOpacity: 0.3,
+      weight: 2,
+    }).addTo(m);
     m.setView([lat, lon], 14, { animate: false });
-    return () => { area.remove(); };
+    return () => {
+      area.remove();
+    };
   }, [focusSite, view, pins]);
   useEffect(() => {
     const m = map.current;
@@ -217,18 +259,48 @@ export function DiscoveryMap() {
         <section className="map-focus-panel" aria-label="Task destination">
           <Pill>{mission ? "RECOMMENDED SURVEY AREA" : "SELECTED AREA"}</Pill>
           <h2>{focusSite.name}</h2>
-          <p>{focusSite.location} · {focusSite.habitat}</p>
-          {mission && <p><b>{mission.title}</b><br />{mission.safety}</p>}
-          <small>Example public area · map focus only. Check access on arrival; no live directions or route guidance.</small>
-          <Button onClick={() => { if (!state.sites.some((s) => s.id === focusSite.id)) setState((s) => ({ ...s, sites: [...s.sites, { ...focusSite }] })); setDraft({ taskId: mission?.id, siteId: focusSite.id }); n("/scan"); }}>Start {mission ? "Task" : "Observation"} Here <ArrowRight size={16} /></Button>
+          <p>
+            {focusSite.location} · {focusSite.habitat}
+          </p>
+          {mission && (
+            <p>
+              <b>{mission.title}</b>
+              <br />
+              {mission.safety}
+            </p>
+          )}
+          <small>
+            Example public area · map focus only. Check access on arrival; no
+            live directions or route guidance.
+          </small>
+          <Button
+            onClick={() => {
+              if (!state.sites.some((s) => s.id === focusSite.id))
+                setState((s) => ({
+                  ...s,
+                  sites: [...s.sites, { ...focusSite }],
+                }));
+              setDraft({ taskId: mission?.id, siteId: focusSite.id });
+              n("/scan");
+            }}
+          >
+            Start {mission ? "Task" : "Observation"} Here{" "}
+            <ArrowRight size={16} />
+          </Button>
         </section>
       )}
-      {focus && !focusSite && <p className="notice">This destination has no available location. Choose a recorded site below or return to Tasks.</p>}
+      {focus && !focusSite && (
+        <p className="notice">
+          This destination has no available location. Choose a recorded site
+          below or return to Tasks.
+        </p>
+      )}
       <div className="tabs map-tabs">
         {["Map", "List"].map((v) => (
           <button
             key={v}
             className={view === v ? "selected" : ""}
+            aria-pressed={view === v}
             onClick={() => setView(v)}
           >
             {v === "Map" ? <MapPin size={17} /> : <BookOpen size={17} />} {v}
@@ -256,6 +328,7 @@ export function DiscoveryMap() {
           <button
             key={c}
             className={c === cat ? "selected" : ""}
+            aria-pressed={c === cat}
             onClick={() => setCat(c)}
           >
             {c}
@@ -326,34 +399,50 @@ export function DiscoveryMap() {
           )}
           {rows.length > pins.reduce((a, p) => a + p.records.length, 0) && (
             <p className="notice">
-              Some locations are sensitive or have no recorded coordinates. Their records remain in List; no location is invented.
+              Some locations are sensitive or have no recorded coordinates.
+              Their records remain in List; no location is invented.
             </p>
           )}
           <div className="map-place-list">
-            {pins.map((p) => (
+            {pins.slice(0, limit).map((p) => (
               <button
                 key={p.key}
                 onClick={() => {
                   setSelected(p.key);
-                  map.current?.panTo([p.lat, p.lon],{animate:false});
+                  map.current?.panTo([p.lat, p.lon], { animate: false });
                 }}
               >
                 <MapPin size={16} />
                 <span>{p.label}</span>
-                <small>{new Set(p.records.map((o) => o.observedAt)).size} visits</small>
+                <small>
+                  {new Set(p.records.map((o) => o.observedAt)).size} visits
+                </small>
                 <ChevronRight size={15} />
               </button>
             ))}
           </div>
+          {pins.length > limit && (
+            <div className="load-more">
+              <p>
+                {limit} of {pins.length} mapped places shown. All pins remain on
+                the map.
+              </p>
+              <Button secondary onClick={() => setLimit((value) => value + 50)}>
+                Show 50 More Places
+              </Button>
+            </div>
+          )}
         </>
       ) : (
         <div className="map-observation-list">
           {["Today", "This Week", "Earlier This Month", "Earlier Field Notes"]
-            .filter((period) => rows.some((o) => periodFor(o) === period))
+            .filter((period) =>
+              visibleRows.some((o) => periodFor(o) === period),
+            )
             .map((period) => (
               <section key={period}>
                 <h3 className="list-date">{period}</h3>
-                {rows
+                {visibleRows
                   .filter((o) => periodFor(o) === period)
                   .sort((a, b) => b.observedAt.localeCompare(a.observedAt))
                   .map((o) => (
@@ -362,7 +451,13 @@ export function DiscoveryMap() {
                       key={o.id}
                       onClick={() => setDetail(o.id)}
                     >
-                      {o.photo && !o.sensitive ? <img className="photo" src={o.photo} alt="Your recorded organism" /> : o.speciesId !== null ? (
+                      {o.photo && !o.sensitive ? (
+                        <img
+                          className="photo"
+                          src={o.photo}
+                          alt="Your recorded organism"
+                        />
+                      ) : o.speciesId !== null ? (
                         <Photo id={o.speciesId} />
                       ) : (
                         <span className="mystery">
@@ -375,17 +470,43 @@ export function DiscoveryMap() {
                             ? "Mystery Discovery"
                             : species[o.speciesId].name}
                         </h3>
-                        <p>{o.sensitive ? "Sensitive location withheld" : state.sites.find((s) => s.id === o.siteId)?.name || o.location}</p>
+                        <p>
+                          {o.sensitive
+                            ? "Sensitive location withheld"
+                            : state.sites.find((s) => s.id === o.siteId)
+                                ?.name || o.location}
+                        </p>
                         <small>
-                          {dateLabel(o.observedAt.slice(0, 10))} · {observationTime(o)}<br />{o.review}{o.sensitive ? " · restricted" : ` · ± ${o.uncertainty} m`}
+                          {dateLabel(o.observedAt.slice(0, 10))} ·{" "}
+                          {observationTime(o)}
+                          <br />
+                          {o.review}
+                          {o.sensitive
+                            ? " · restricted"
+                            : ` · ± ${o.uncertainty} m`}
                         </small>
-                        {o.taskId && <span className="map-task-tag">{state.tasks.find((t) => t.id === o.taskId)?.title || "Linked task"}</span>}
+                        {o.taskId && (
+                          <span className="map-task-tag">
+                            {state.tasks.find((t) => t.id === o.taskId)
+                              ?.title || "Linked task"}
+                          </span>
+                        )}
                       </div>
                       <ChevronRight size={17} />
                     </button>
                   ))}
               </section>
             ))}
+        </div>
+      )}
+      {view === "List" && rows.length > limit && (
+        <div className="load-more">
+          <p>
+            Showing {limit} of {rows.length} matching observations.
+          </p>
+          <Button secondary onClick={() => setLimit((n) => n + 50)}>
+            Show 50 More Observations
+          </Button>
         </div>
       )}
       {!rows.length && (
@@ -407,63 +528,103 @@ export function DiscoveryMap() {
       </p>
       {chosen && (
         <Modal title={chosen.label} onClose={() => setSelected("")}>
-          <Pill>{new Set(chosen.records.map((o) => o.observedAt)).size} visits · private place</Pill>
-          {mission && focus === chosen.key && <div className="notice"><MapPin size={18} /><p><b>{mission.title}</b><br />Recommended survey area. Close this sheet to see the highlighted area and start your task. No turn-by-turn navigation.</p></div>}
-          {[...chosen.records].sort((a, b) => b.observedAt.localeCompare(a.observedAt)).map((o) => (
-            <article className="map-selected-record" key={o.id}>
-              {o.photo ? <img className="photo" src={o.photo} alt="Your recorded organism" /> : o.speciesId !== null && <Photo id={o.speciesId} />}
-              <div>
-                <span className="eyebrow">
-                  {o.provenance.includes("Seeded")
-                    ? "FICTIONAL DEMO OBSERVATION"
-                    : "LOCAL OBSERVATION"}
-                </span>
-                <h3>
-                  {o.speciesId === null
-                    ? "Mystery Discovery"
-                    : species[o.speciesId].name}
-                </h3>
-                <p className="latin">
-                  {o.speciesId === null
-                    ? o.provisional
-                    : species[o.speciesId].latin}
-                </p>
-                <p>
-                  {dateLabel(o.observedAt.slice(0, 10))} · {observationTime(o)}
-                  <br />{o.location} · {o.habitat}
-                  <br />
-                  {o.identification}
-                  <br />
-                  {o.review} · ± {o.uncertainty} m
-                </p>
-                {o.taskId && <p className="map-task-context"><b>{state.tasks.find((t) => t.id === o.taskId)?.title || "Linked task"}</b><br />{state.projects.find((p) => p.id === o.projectId)?.title}</p>}
-                {o.notes && <p className="map-note">{o.notes}</p>}
-                <small>Record {o.id}</small>
-                <div className="button-row">
-                  <Button
-                    secondary
-                    onClick={() => {
-                      setSelected("");
-                      setDetail(o.id);
-                    }}
-                  >
-                    View Observation
-                  </Button>
-                  {o.speciesId !== null && (
-                    <Link
-                      className="button secondary"
-                      to={"/card/" + o.speciesId}
-                    >
-                      View Species Card
-                    </Link>
+          <Pill>
+            {new Set(chosen.records.map((o) => o.observedAt)).size} visits ·
+            private place
+          </Pill>
+          {mission && focus === chosen.key && (
+            <div className="notice">
+              <MapPin size={18} />
+              <p>
+                <b>{mission.title}</b>
+                <br />
+                Recommended survey area. Close this sheet to see the highlighted
+                area and start your task. No turn-by-turn navigation.
+              </p>
+            </div>
+          )}
+          {[...chosen.records]
+            .sort((a, b) => b.observedAt.localeCompare(a.observedAt))
+            .slice(0, visitLimit)
+            .map((o) => (
+              <article className="map-selected-record" key={o.id}>
+                {o.photo ? (
+                  <img
+                    className="photo"
+                    src={o.photo}
+                    alt="Your recorded organism"
+                  />
+                ) : (
+                  o.speciesId !== null && <Photo id={o.speciesId} />
+                )}
+                <div>
+                  <span className="eyebrow">
+                    {o.provenance.includes("Seeded")
+                      ? "FICTIONAL DEMO OBSERVATION"
+                      : "LOCAL OBSERVATION"}
+                  </span>
+                  <h3>
+                    {o.speciesId === null
+                      ? "Mystery Discovery"
+                      : species[o.speciesId].name}
+                  </h3>
+                  <p className="latin">
+                    {o.speciesId === null
+                      ? o.provisional
+                      : species[o.speciesId].latin}
+                  </p>
+                  <p>
+                    {dateLabel(o.observedAt.slice(0, 10))} ·{" "}
+                    {observationTime(o)}
+                    <br />
+                    {o.location} · {o.habitat}
+                    <br />
+                    {o.identification}
+                    <br />
+                    {o.review} · ± {o.uncertainty} m
+                  </p>
+                  {o.taskId && (
+                    <p className="map-task-context">
+                      <b>
+                        {state.tasks.find((t) => t.id === o.taskId)?.title ||
+                          "Linked task"}
+                      </b>
+                      <br />
+                      {state.projects.find((p) => p.id === o.projectId)?.title}
+                    </p>
                   )}
+                  {o.notes && <p className="map-note">{o.notes}</p>}
+                  <small>Record {o.id}</small>
+                  <div className="button-row">
+                    <Button
+                      secondary
+                      onClick={() => {
+                        setSelected("");
+                        setDetail(o.id);
+                      }}
+                    >
+                      View Observation
+                    </Button>
+                    {o.speciesId !== null && (
+                      <Link
+                        className="button secondary"
+                        to={"/card/" + o.speciesId}
+                      >
+                        View Species Card
+                      </Link>
+                    )}
+                  </div>
+                  <button className="text-link" onClick={() => observeAgain(o)}>
+                    Observe Again <RefreshCw size={15} />
+                  </button>
                 </div>
-                <button className="text-link" onClick={() => observeAgain(o)}>
-                  Observe Again <RefreshCw size={15} />
-                </button>
-              </div>
-            </article>
-          ))}
+              </article>
+            ))}
+          {chosen.records.length > visitLimit && (
+            <Button secondary onClick={() => setVisitLimit((n) => n + 20)}>
+              Show 20 More Visits
+            </Button>
+          )}
           <Link
             className="inline-card"
             to={"/sites?site=" + encodeURIComponent(chosen.key)}

@@ -21,7 +21,7 @@ import {
   Trophy,
   UserRound,
 } from "lucide-react";
-import { useApp } from "./context";
+import { useApp, draftKey } from "./context";
 import {
   activeConsent,
   repository,
@@ -29,6 +29,7 @@ import {
   makeConsent,
   seedState,
   speciesIds,
+  characterProgress,
 } from "./store";
 import { species } from "./data";
 import { config } from "./config";
@@ -44,7 +45,7 @@ export function Welcome() {
       <div className="welcome-logo">
         <Leaf />
         {config.name}
-        <small>DEVELOPMENT PLACEHOLDER</small>
+        <small>FIND THE WILD. KEEP THE WONDER.</small>
       </div>
       <div className="welcome-art">
         <Landscape>
@@ -113,6 +114,7 @@ export function ConsentPage() {
   const [agree, setAgree] = useState(false);
   const [adult, setAdult] = useState(false);
   const [declined, setDeclined] = useState(false);
+  const [deleteData, setDeleteData] = useState(false);
   const [startMode, setStartMode] = useState(state.startMode);
   return (
     <main className="consent-page">
@@ -123,14 +125,14 @@ export function ConsentPage() {
         <ShieldCheck />
       </div>
       <Heading
-        eyebrow="PARTICIPATION AGREEMENT · VERSION 1.0"
+        eyebrow="PARTICIPATION AGREEMENT · VERSION 1.1"
         title="Help Nature. Help Research."
         sub="Your curiosity can help build a clearer picture of the natural world."
       />
       <p>
-        Participation includes processing submitted biodiversity observations
-        for authorised research. In this prototype, all records stay in this
-        browser.
+        Join Wilsee with an informed participation agreement. Discoveries stay
+        in your private journal. Only observations you explicitly choose to
+        submit enter the local research demonstration.
       </p>
       <div className="info-row">
         <Camera />
@@ -147,9 +149,9 @@ export function ConsentPage() {
         <div>
           <h3>For Biodiversity Research</h3>
           <p>
-            Eligible submitted observations would be available to authorised
-            academic, conservation and approved project research teams for
-            legitimate biodiversity studies.
+            Only explicitly submitted observations would be available to
+            authorised academic, conservation and approved project research
+            teams for legitimate biodiversity studies.
           </p>
         </div>
       </div>
@@ -166,10 +168,11 @@ export function ConsentPage() {
       <details>
         <summary>What information will researchers receive?</summary>
         <p>
-          Submitted organism photos, identification and uncertainty, observation
-          dates and times, location and precision, survey effort, habitat,
-          behaviour, notes and a pseudonymous contributor ID. Personal
-          collections and game profiles are not public research records.
+          When you confirm a research submission: organism photos,
+          identification and uncertainty, observation dates and times, location
+          and precision, survey effort, habitat, behaviour, notes and a
+          pseudonymous contributor ID. Personal collections and game profiles
+          are not public research records.
         </p>
         <p>
           Production access would be limited to approved researchers under
@@ -194,12 +197,37 @@ export function ConsentPage() {
         <fieldset className="explorer-choice">
           <legend>Your first adventure</legend>
           <label className={startMode === "demo" ? "chosen" : ""}>
-            <input type="radio" name="start-mode" value="demo" checked={startMode === "demo"} onChange={() => setStartMode("demo")} />
-            <span><strong>Demo Explorer <Pill>RECOMMENDED</Pill></strong><small>24 fictional observations, 6 companions, 8 sites and living biomes. Ready to present.</small></span>
+            <input
+              type="radio"
+              name="start-mode"
+              value="demo"
+              checked={startMode === "demo"}
+              onChange={() => setStartMode("demo")}
+            />
+            <span>
+              <strong>
+                Demo Explorer <Pill>RECOMMENDED</Pill>
+              </strong>
+              <small>
+                24 fictional observations, 6 companions, 8 sites and living
+                biomes. Ready to present.
+              </small>
+            </span>
           </label>
           <label className={startMode === "fresh" ? "chosen" : ""}>
-            <input type="radio" name="start-mode" value="fresh" checked={startMode === "fresh"} onChange={() => setStartMode("fresh")} />
-            <span><strong>Fresh Explorer</strong><small>Start an empty journal and make your own discoveries.</small></span>
+            <input
+              type="radio"
+              name="start-mode"
+              value="fresh"
+              checked={startMode === "fresh"}
+              onChange={() => setStartMode("fresh")}
+            />
+            <span>
+              <strong>Fresh Explorer</strong>
+              <small>
+                Start an empty journal and make your own discoveries.
+              </small>
+            </span>
           </label>
         </fieldset>
       )}
@@ -227,19 +255,25 @@ export function ConsentPage() {
           onChange={(e) => setAgree(e.target.checked)}
         />
         <span>
-          I understand that my submitted biodiversity observations, including
-          relevant photographs, dates, locations and observation details, will
-          be processed and shared with authorised researchers for the research
-          purposes explained above. This prototype simulates that process
-          locally.
+          I understand that the biodiversity observations I explicitly choose to
+          submit, including relevant photographs, dates, locations and
+          observation details, will be processed and shared with authorised
+          researchers for the research purposes explained above. This prototype
+          simulates that process locally.
         </span>
       </label>
       <Button
-        disabled={!agree || !adult}
+        disabled={!agree || !adult || state.recoveryRequired}
         onClick={() => {
           setState((s) => {
-            const next = { ...s, startMode, consents: [...s.consents, makeConsent(true)] };
-            return !s.observations.length && startMode === "demo" ? seedState(next) : next;
+            const next = {
+              ...s,
+              startMode,
+              consents: [...s.consents, makeConsent(true)],
+            };
+            return !s.observations.length && startMode === "demo"
+              ? seedState(next)
+              : next;
           });
           n("/home");
         }}
@@ -269,6 +303,40 @@ export function ConsentPage() {
         <Link className="text-link" to="/profile">
           Return to your profile
         </Link>
+      )}
+      {state.observations.length > 0 && !state.recoveryRequired && (
+        <>
+          <p className="footnote">
+            Your existing private journal is retained while participation is
+            closed. You may delete it without accepting a new agreement.
+          </p>
+          <Button secondary onClick={() => setDeleteData(true)}>
+            Delete My Local Data
+          </Button>
+        </>
+      )}
+      {deleteData && (
+        <Modal
+          title="Delete your local Wilsee data?"
+          onClose={() => setDeleteData(false)}
+        >
+          <p>
+            This removes this browser’s observations, photographs, permissions
+            and game progress. It cannot be undone.
+          </p>
+          <Button
+            onClick={() => {
+              sessionStorage.removeItem(draftKey);
+              repository.save(emptyState("fresh"));
+              window.location.assign("/");
+            }}
+          >
+            Confirm Delete My Local Data
+          </Button>
+          <Button secondary onClick={() => setDeleteData(false)}>
+            Keep My Data
+          </Button>
+        </Modal>
       )}
     </main>
   );
@@ -333,6 +401,30 @@ export function Profile() {
         <h2>A passport to wonder</h2>
         <Trophy size={20} />
       </div>
+      {state.game.activeCompanionId !== null &&
+        ids.includes(state.game.activeCompanionId) && (
+          <Link
+            className="inline-card profile-companion"
+            to={"/character/" + state.game.activeCompanionId}
+          >
+            <Creature
+              kind={state.game.activeCompanionId}
+              stage={
+                characterProgress(state, state.game.activeCompanionId).stage
+              }
+            />
+            <span>
+              <strong>{species[state.game.activeCompanionId].pet}</strong>
+              <small>
+                Your active companion · Level{" "}
+                {characterProgress(state, state.game.activeCompanionId).level} ·
+                Stage{" "}
+                {characterProgress(state, state.game.activeCompanionId).stage}
+              </small>
+            </span>
+            <ArrowRight size={18} />
+          </Link>
+        )}
       <div className="badges">
         {achievements.map(([name, unlocked, Icon]) => (
           <div key={name} className={unlocked ? "earned" : ""}>
@@ -351,8 +443,8 @@ export function Profile() {
           <Lock size={17} /> Collections and observation history are private.
         </p>
         <p>
-          <FlaskConical size={17} /> Saved records join the authorised research
-          dataset.
+          <FlaskConical size={17} /> Research submissions need a separate,
+          informed confirmation.
         </p>
         <p>
           <MapPin size={17} /> No background tracking or public coordinates.
@@ -389,9 +481,7 @@ export function Profile() {
         Current mode: {state.mode}. Demo Explorer replaces observations with
         labelled sample records. Consent remains your explicit decision.
       </p>
-      <Button onClick={() => setConfirm("demo")}>
-        Load Demo Explorer
-      </Button>
+      <Button onClick={() => setConfirm("demo")}>Load Demo Explorer</Button>
       <Button secondary onClick={() => setConfirm("reset")}>
         Fresh Explorer · Reset Demo
       </Button>
@@ -417,7 +507,7 @@ export function Profile() {
         >
           <p>
             {confirm === "withdraw"
-              ? "This stops further participation and closes the observation app. Your local records remain for correction or deletion through the researcher demonstration. No data has been sent outside this prototype."
+              ? "This stops further participation, closes the observation app and removes records from research views. Your private journal is retained. You can delete local data from the agreement screen without accepting again. No data has been sent outside this prototype."
               : confirm === "demo"
                 ? "This replaces local observation progress with labelled samples and a populated ecosystem. Your consent is preserved."
                 : "This deletes all local observations, photographs, consent records and game progress, then returns to the welcome screen."}
@@ -441,6 +531,7 @@ export function Profile() {
                 setState(seedState(state));
                 toast("Labelled sample explorer loaded.");
               } else {
+                sessionStorage.removeItem(draftKey);
                 const cleared = emptyState("fresh");
                 repository.save(cleared);
                 setState(cleared);

@@ -1,0 +1,507 @@
+{
+  "capturedAt": "2026-10-22T19:35:11.626Z",
+  "environment": {
+    "platform": "win32",
+    "node": "v23.5.0",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+    "memoryGB": 16,
+    "viewport": "390×844, DPR 1",
+    "network": "localhost, no network/CPU throttling; production preview; service worker blocked for cold samples"
+  },
+  "routes": [
+    {
+      "route": "/home",
+      "samples": [
+        {
+          "lcp": 144,
+          "cls": 0.0010802127072595817,
+          "headingMs": 143,
+          "domContentLoadedMs": 48,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 136,
+          "cls": 0.0010802127072595817,
+          "headingMs": 144,
+          "domContentLoadedMs": 44,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 144,
+          "cls": 0.0010802127072595817,
+          "headingMs": 151,
+          "domContentLoadedMs": 47,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 144,
+        "lcp": 144,
+        "cls": 0.0010802127072595817,
+        "encodedScriptBytes": 120950
+      }
+    },
+    {
+      "route": "/scan",
+      "samples": [
+        {
+          "lcp": 448,
+          "cls": 0.00006054834969841371,
+          "headingMs": 433,
+          "domContentLoadedMs": 54,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126152,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 440,
+          "cls": 0.00006054834969841371,
+          "headingMs": 421,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126152,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 444,
+          "cls": 0.00006054834969841371,
+          "headingMs": 428,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126152,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 428,
+        "lcp": 444,
+        "cls": 0.00006054834969841371,
+        "encodedScriptBytes": 126152
+      }
+    },
+    {
+      "route": "/collection",
+      "samples": [
+        {
+          "lcp": 168,
+          "cls": 0.0006875717236615219,
+          "headingMs": 159,
+          "domContentLoadedMs": 50,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 180,
+          "cls": 0.0006875717236615219,
+          "headingMs": 174,
+          "domContentLoadedMs": 63,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 164,
+          "cls": 0.0006875717236615219,
+          "headingMs": 170,
+          "domContentLoadedMs": 51,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 170,
+        "lcp": 168,
+        "cls": 0.0006875717236615219,
+        "encodedScriptBytes": 120950
+      }
+    },
+    {
+      "route": "/tasks",
+      "samples": [
+        {
+          "lcp": 124,
+          "cls": 0.00006796436167547554,
+          "headingMs": 123,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 120,
+          "cls": 0.00006796436167547554,
+          "headingMs": 124,
+          "domContentLoadedMs": 48,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 120,
+          "cls": 0.00006796436167547554,
+          "headingMs": 126,
+          "domContentLoadedMs": 48,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120950,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 124,
+        "lcp": 120,
+        "cls": 0.00006796436167547554,
+        "encodedScriptBytes": 120950
+      }
+    },
+    {
+      "route": "/map",
+      "samples": [
+        {
+          "lcp": 424,
+          "cls": 0,
+          "headingMs": 416,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172764,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 436,
+          "cls": 0,
+          "headingMs": 420,
+          "domContentLoadedMs": 51,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172764,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 448,
+          "cls": 0,
+          "headingMs": 428,
+          "domContentLoadedMs": 48,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172764,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 420,
+        "lcp": 436,
+        "cls": 0,
+        "encodedScriptBytes": 172764
+      }
+    },
+    {
+      "route": "/card/3",
+      "samples": [
+        {
+          "lcp": 420,
+          "cls": 0.000032130933763467426,
+          "headingMs": 411,
+          "domContentLoadedMs": 48,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167287,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 428,
+          "cls": 0.000032130933763467426,
+          "headingMs": 419,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167287,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 432,
+          "cls": 0.000032130933763467426,
+          "headingMs": 425,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167287,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 419,
+        "lcp": 428,
+        "cls": 0.000032130933763467426,
+        "encodedScriptBytes": 167287
+      }
+    },
+    {
+      "route": "/researcher-demo",
+      "samples": [
+        {
+          "lcp": 444,
+          "cls": 0.02575801388238567,
+          "headingMs": 446,
+          "domContentLoadedMs": 58,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179807,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 428,
+          "cls": 0.02436627653458264,
+          "headingMs": 431,
+          "domContentLoadedMs": 47,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179807,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 432,
+          "cls": 0.02575801388238567,
+          "headingMs": 433,
+          "domContentLoadedMs": 54,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179807,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 433,
+        "lcp": 432,
+        "cls": 0.02575801388238567,
+        "encodedScriptBytes": 179807
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "name": "Task details",
+      "automationWallMs": 55
+    },
+    {
+      "name": "Map to journal",
+      "automationWallMs": 85
+    },
+    {
+      "name": "Card flip",
+      "automationWallMs": 43
+    }
+  ],
+  "errors": [],
+  "bundle": [
+    {
+      "file": "cards-CT9a8PJU.js",
+      "bytes": 139908,
+      "gzipBytes": 45990
+    },
+    {
+      "file": "index-B6YgQeiL.js",
+      "bytes": 317417,
+      "gzipBytes": 98222
+    },
+    {
+      "file": "jsx-runtime-Wy9s6hX0.js",
+      "bytes": 8911,
+      "gzipBytes": 3383
+    },
+    {
+      "file": "observation-map-DeI8TBJK.js",
+      "bytes": 161894,
+      "gzipBytes": 47683
+    },
+    {
+      "file": "observations-CtQEEhOa.js",
+      "bytes": 11423,
+      "gzipBytes": 3784
+    },
+    {
+      "file": "record-2ojuR1jx.js",
+      "bytes": 9498,
+      "gzipBytes": 3694
+    },
+    {
+      "file": "refresh-cw-DxWBx7jG.js",
+      "bytes": 347,
+      "gzipBytes": 242
+    },
+    {
+      "file": "research-COEH_uBI.js",
+      "bytes": 33086,
+      "gzipBytes": 8736
+    },
+    {
+      "file": "scanner-DArWcLva.js",
+      "bytes": 13390,
+      "gzipBytes": 4855
+    },
+    {
+      "file": "scene-canvas-K6COHNtH.js",
+      "bytes": 959567,
+      "gzipBytes": 254226
+    },
+    {
+      "file": "ui-DqqhZssn.js",
+      "bytes": 53375,
+      "gzipBytes": 19211
+    }
+  ],
+  "scenes": [
+    {
+      "label": "Pipwing · balanced",
+      "entryMs": 1511,
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "88",
+      "triangles": "25946",
+      "geometries": "16",
+      "textures": "4",
+      "frameMs": "135.17",
+      "frameSamples": [
+        162.57,
+        122.9,
+        135.17
+      ],
+      "longFrames": "6",
+      "medianFrameIntervalMs": 135.17
+    },
+    {
+      "label": "Pipwing · lightweight",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "43",
+      "triangles": "12972",
+      "geometries": "16",
+      "textures": "4",
+      "frameMs": "38.45",
+      "frameSamples": [
+        209.24,
+        266.43,
+        38.45
+      ],
+      "longFrames": "4",
+      "medianFrameIntervalMs": 209.24
+    },
+    {
+      "label": "Meadow · balanced",
+      "entryMs": 2081,
+      "sceneReady": "true",
+      "characterCount": "2",
+      "stages": "3,1",
+      "renderMode": "always",
+      "drawCalls": "268",
+      "triangles": "133626",
+      "geometries": "49",
+      "textures": "4",
+      "frameMs": "297.43",
+      "frameSamples": [
+        358.6,
+        344.2,
+        297.43
+      ],
+      "longFrames": "3",
+      "medianFrameIntervalMs": 344.2
+    },
+    {
+      "label": "Meadow · lightweight",
+      "sceneReady": "true",
+      "characterCount": "2",
+      "stages": "3,1",
+      "renderMode": "always",
+      "drawCalls": "140",
+      "triangles": "68216",
+      "geometries": "49",
+      "textures": "4",
+      "frameMs": "388.00",
+      "frameSamples": [
+        196.12,
+        288.47,
+        388
+      ],
+      "longFrames": "3",
+      "medianFrameIntervalMs": 288.47
+    },
+    {
+      "label": "Woodland · balanced",
+      "sceneReady": "true",
+      "characterCount": "3",
+      "stages": "2,1,1",
+      "renderMode": "always",
+      "drawCalls": "282",
+      "triangles": "115024",
+      "geometries": "72",
+      "textures": "4",
+      "frameMs": "133.87",
+      "frameSamples": [
+        127.1,
+        236.01,
+        133.87
+      ],
+      "longFrames": "7",
+      "medianFrameIntervalMs": 133.87
+    },
+    {
+      "label": "Woodland · lightweight",
+      "sceneReady": "true",
+      "characterCount": "3",
+      "stages": "2,1,1",
+      "renderMode": "always",
+      "drawCalls": "142",
+      "triangles": "57768",
+      "geometries": "72",
+      "textures": "4",
+      "frameMs": "123.63",
+      "frameSamples": [
+        158.66,
+        145.31,
+        115.61
+      ],
+      "longFrames": "7",
+      "medianFrameIntervalMs": 145.31
+    },
+    {
+      "label": "Misty Grove · balanced",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "121",
+      "triangles": "42744",
+      "geometries": "91",
+      "textures": "4",
+      "frameMs": "97.00",
+      "frameSamples": [
+        105.63,
+        78.58,
+        97
+      ],
+      "longFrames": "10",
+      "medianFrameIntervalMs": 97
+    },
+    {
+      "label": "Misty Grove · lightweight",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "62",
+      "triangles": "21652",
+      "geometries": "91",
+      "textures": "4",
+      "frameMs": "62.59",
+      "frameSamples": [
+        67.93,
+        66.11,
+        62.59
+      ],
+      "longFrames": "12",
+      "medianFrameIntervalMs": 66.11
+    }
+  ]
+}

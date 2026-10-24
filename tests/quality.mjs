@@ -1,3 +1,4 @@
+import { permitResearch } from "./helpers.mjs";
 import { chromium } from "@playwright/test";
 import { strict as assert } from "node:assert";
 const browser = await chromium.launch({ headless: true });
@@ -41,6 +42,7 @@ await page
   .waitFor();
 await page.getByLabel("Location description").fill("Sensitive demo locality");
 await page.getByRole("checkbox").check();
+await permitResearch(page);
 await page.getByRole("button", { name: "Save Observation" }).click();
 await page.waitForURL("**/unlock/0");
 const s = await page.evaluate(() =>

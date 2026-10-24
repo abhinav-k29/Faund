@@ -1,0 +1,451 @@
+{
+  "capturedAt": "2026-10-22T19:19:49.327Z",
+  "environment": {
+    "platform": "win32",
+    "node": "v23.5.0",
+    "cpu": "11th Gen Intel(R) Core(TM) i5-1135G7 @ 2.40GHz",
+    "memoryGB": 16,
+    "viewport": "390×844, DPR 1",
+    "network": "localhost, no network/CPU throttling; production preview; service worker blocked for cold samples"
+  },
+  "routes": [
+    {
+      "route": "/home",
+      "samples": [
+        {
+          "lcp": 144,
+          "cls": 0.005353825042824072,
+          "headingMs": 147,
+          "domContentLoadedMs": 45,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 140,
+          "cls": 0.0010802127072595817,
+          "headingMs": 147,
+          "domContentLoadedMs": 45,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 144,
+          "cls": 0.005353825042824072,
+          "headingMs": 136,
+          "domContentLoadedMs": 43,
+          "resourceRequests": 11,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 147,
+        "lcp": 144,
+        "cls": 0.005353825042824072,
+        "encodedScriptBytes": 120923
+      }
+    },
+    {
+      "route": "/scan",
+      "samples": [
+        {
+          "lcp": 444,
+          "cls": 0.00006054834969841371,
+          "headingMs": 432,
+          "domContentLoadedMs": 59,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126124,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 420,
+          "cls": 0.00006054834969841371,
+          "headingMs": 407,
+          "domContentLoadedMs": 46,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126124,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 436,
+          "cls": 0.00006054834969841371,
+          "headingMs": 423,
+          "domContentLoadedMs": 63,
+          "resourceRequests": 18,
+          "encodedScriptBytes": 126124,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 423,
+        "lcp": 436,
+        "cls": 0.00006054834969841371,
+        "encodedScriptBytes": 126124
+      }
+    },
+    {
+      "route": "/collection",
+      "samples": [
+        {
+          "lcp": 144,
+          "cls": 0.0006875717236615219,
+          "headingMs": 154,
+          "domContentLoadedMs": 45,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 156,
+          "cls": 0.0006875717236615219,
+          "headingMs": 152,
+          "domContentLoadedMs": 44,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 160,
+          "cls": 0.0006875717236615219,
+          "headingMs": 157,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 16,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 154,
+        "lcp": 156,
+        "cls": 0.0006875717236615219,
+        "encodedScriptBytes": 120923
+      }
+    },
+    {
+      "route": "/tasks",
+      "samples": [
+        {
+          "lcp": 124,
+          "cls": 0.00006796436167547554,
+          "headingMs": 129,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 120,
+          "cls": 0.00006796436167547554,
+          "headingMs": 129,
+          "domContentLoadedMs": 47,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 132,
+          "cls": 0.00006796436167547554,
+          "headingMs": 133,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 10,
+          "encodedScriptBytes": 120923,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 129,
+        "lcp": 124,
+        "cls": 0.00006796436167547554,
+        "encodedScriptBytes": 120923
+      }
+    },
+    {
+      "route": "/map",
+      "samples": [
+        {
+          "lcp": 452,
+          "cls": 0,
+          "headingMs": 435,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172739,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 444,
+          "cls": 0,
+          "headingMs": 428,
+          "domContentLoadedMs": 45,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172739,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 428,
+          "cls": 0,
+          "headingMs": 425,
+          "domContentLoadedMs": 46,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 172739,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 428,
+        "lcp": 444,
+        "cls": 0,
+        "encodedScriptBytes": 172739
+      }
+    },
+    {
+      "route": "/card/3",
+      "samples": [
+        {
+          "lcp": 428,
+          "cls": 0.000032130933763467426,
+          "headingMs": 422,
+          "domContentLoadedMs": 47,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167260,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 412,
+          "cls": 0.000032130933763467426,
+          "headingMs": 405,
+          "domContentLoadedMs": 44,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167260,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 444,
+          "cls": 0.000032130933763467426,
+          "headingMs": 434,
+          "domContentLoadedMs": 60,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 167260,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 422,
+        "lcp": 428,
+        "cls": 0.000032130933763467426,
+        "encodedScriptBytes": 167260
+      }
+    },
+    {
+      "route": "/researcher-demo",
+      "samples": [
+        {
+          "lcp": 444,
+          "cls": 0.02575801388238567,
+          "headingMs": 447,
+          "domContentLoadedMs": 52,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179778,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 424,
+          "cls": 0.02575801388238567,
+          "headingMs": 428,
+          "domContentLoadedMs": 47,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179778,
+          "sceneEngineRequested": false
+        },
+        {
+          "lcp": 440,
+          "cls": 0.02575801388238567,
+          "headingMs": 445,
+          "domContentLoadedMs": 49,
+          "resourceRequests": 14,
+          "encodedScriptBytes": 179778,
+          "sceneEngineRequested": false
+        }
+      ],
+      "median": {
+        "headingMs": 445,
+        "lcp": 440,
+        "cls": 0.02575801388238567,
+        "encodedScriptBytes": 179778
+      }
+    }
+  ],
+  "interactions": [
+    {
+      "name": "Task details",
+      "automationWallMs": 48
+    },
+    {
+      "name": "Map to journal",
+      "automationWallMs": 72
+    },
+    {
+      "name": "Card flip",
+      "automationWallMs": 41
+    }
+  ],
+  "errors": [],
+  "bundle": [
+    {
+      "file": "cards-LoaevjJS.js",
+      "bytes": 139908,
+      "gzipBytes": 45990
+    },
+    {
+      "file": "index-PR55SR2L.js",
+      "bytes": 317388,
+      "gzipBytes": 98195
+    },
+    {
+      "file": "jsx-runtime-Wy9s6hX0.js",
+      "bytes": 8911,
+      "gzipBytes": 3383
+    },
+    {
+      "file": "observation-map-u2vQrrBU.js",
+      "bytes": 161894,
+      "gzipBytes": 47684
+    },
+    {
+      "file": "observations-Dcr3CFJS.js",
+      "bytes": 11423,
+      "gzipBytes": 3785
+    },
+    {
+      "file": "record-BsHWCx6b.js",
+      "bytes": 9498,
+      "gzipBytes": 3694
+    },
+    {
+      "file": "refresh-cw-DxWBx7jG.js",
+      "bytes": 347,
+      "gzipBytes": 242
+    },
+    {
+      "file": "research-D8-6RTRY.js",
+      "bytes": 33092,
+      "gzipBytes": 8733
+    },
+    {
+      "file": "scanner-D5mO1Udj.js",
+      "bytes": 13390,
+      "gzipBytes": 4854
+    },
+    {
+      "file": "scene-canvas-d6_ir96n.js",
+      "bytes": 959260,
+      "gzipBytes": 253811
+    },
+    {
+      "file": "ui-DqqhZssn.js",
+      "bytes": 53375,
+      "gzipBytes": 19211
+    }
+  ],
+  "scenes": [
+    {
+      "label": "Pipwing · balanced",
+      "entryMs": 1794,
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "88",
+      "triangles": "25946",
+      "geometries": "16",
+      "textures": "4",
+      "frameMs": "112.08"
+    },
+    {
+      "label": "Pipwing · lightweight",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "43",
+      "triangles": "12972",
+      "geometries": "16",
+      "textures": "4",
+      "frameMs": "127.33"
+    },
+    {
+      "label": "Meadow · balanced",
+      "entryMs": 2340,
+      "sceneReady": "true",
+      "characterCount": "2",
+      "stages": "3,1",
+      "renderMode": "always",
+      "drawCalls": "494",
+      "triangles": "242922",
+      "geometries": "171",
+      "textures": "4",
+      "frameMs": "62.49"
+    },
+    {
+      "label": "Meadow · lightweight",
+      "sceneReady": "true",
+      "characterCount": "2",
+      "stages": "3,1",
+      "renderMode": "always",
+      "drawCalls": "253",
+      "triangles": "122864",
+      "geometries": "171",
+      "textures": "4",
+      "frameMs": "137.00"
+    },
+    {
+      "label": "Woodland · balanced",
+      "sceneReady": "true",
+      "characterCount": "3",
+      "stages": "2,1,1",
+      "renderMode": "always",
+      "drawCalls": "426",
+      "triangles": "177952",
+      "geometries": "154",
+      "textures": "4",
+      "frameMs": "166.63"
+    },
+    {
+      "label": "Woodland · lightweight",
+      "sceneReady": "true",
+      "characterCount": "3",
+      "stages": "2,1,1",
+      "renderMode": "always",
+      "drawCalls": "214",
+      "triangles": "89232",
+      "geometries": "154",
+      "textures": "4",
+      "frameMs": "191.42"
+    },
+    {
+      "label": "Misty Grove · balanced",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "165",
+      "triangles": "55992",
+      "geometries": "119",
+      "textures": "4",
+      "frameMs": "174.74"
+    },
+    {
+      "label": "Misty Grove · lightweight",
+      "sceneReady": "true",
+      "characterCount": "1",
+      "stages": "2",
+      "renderMode": "always",
+      "drawCalls": "84",
+      "triangles": "28276",
+      "geometries": "119",
+      "textures": "4",
+      "frameMs": "85.92"
+    }
+  ]
+}

@@ -7,6 +7,23 @@ export type Draft = {
   siteId?: string;
   provenance?: string;
 };
+export const draftKey = "nature-discovery-v1:draft";
+export function loadDraft(): Draft {
+  try {
+    const value = JSON.parse(sessionStorage.getItem(draftKey) || "{}");
+    if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+    return Object.fromEntries(
+      Object.entries(value).filter(([key, item]) =>
+        key === "uncertain"
+          ? typeof item === "boolean"
+          : ["photo", "taskId", "siteId", "provenance"].includes(key) &&
+            typeof item === "string",
+      ),
+    );
+  } catch {
+    return {};
+  }
+}
 export type AppContext = {
   state: State;
   setState: React.Dispatch<React.SetStateAction<State>>;

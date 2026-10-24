@@ -1,5 +1,17 @@
 import { species } from "./data";
 import { config } from "./config";
+import { activeConsent, speciesIds, researchScope } from "./domain";
+export * from "./domain";
+export type ResearchPermission = {
+  status: "private" | "submitted" | "withdrawn";
+  receiptId?: string;
+  submittedAt?: string;
+  withdrawnAt?: string;
+  agreementVersion?: string;
+  agreementConsentId?: string;
+  scope?: string;
+  events?: { action: "submitted" | "withdrawn"; timestamp: string }[];
+};
 export const uid = () =>
   globalThis.crypto?.randomUUID?.() ||
   "demo-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
@@ -40,6 +52,8 @@ export type Observation = {
   activity: string;
   weather: string;
   projectId?: string;
+  research?: ResearchPermission;
+  missingFields?: string[];
 };
 export type Task = {
   id: string;
@@ -122,6 +136,11 @@ export type State = {
   projects: ResearchProject[];
   game: GameProgress;
   startMode: "demo" | "fresh";
+  recoveryRequired?: boolean;
+  visualSettings?: {
+    quality: "balanced" | "low" | "illustrated";
+    paused: boolean;
+  };
 };
 export const initialTasks: Task[] = [
   {
@@ -188,16 +207,20 @@ export const initialTasks: Task[] = [
   {
     id: "pollinator",
     title: "Pollinator Watch",
-    question: "Which flower visitors are recorded across five visits to the same garden edge?",
-    instructions: "Return to the same named site on five different visits. Watch for five minutes, record a flower visitor and describe its activity without touching it. Positive sightings only; these do not measure pollinator abundance.",
+    question:
+      "Which flower visitors are recorded across five visits to the same garden edge?",
+    instructions:
+      "Return to the same named site on five different visits. Watch for five minutes, record a flower visitor and describe its activity without touching it. Positive sightings only; these do not measure pollinator abundance.",
     target: "Flower-visiting insects",
     region: "Sydney public gardens",
     duration: 5,
     status: "Published",
     reward: 50,
     type: "Research",
-    requiredFields: "Date, named site, five minutes effort, visitor activity notes",
-    safety: "Stay on public paths. Do not handle bees, approach nests or pick flowers.",
+    requiredFields:
+      "Date, named site, five minutes effort, visitor activity notes",
+    safety:
+      "Stay on public paths. Do not handle bees, approach nests or pick flowers.",
     projectId: "seasonal-life",
     requiredCategory: "Insects",
     requiresNotes: true,
@@ -219,12 +242,6 @@ export const emptyState = (startMode: "demo" | "fresh" = "demo"): State => ({
   game: newGame(),
   startMode,
 });
-export const activeConsent = (s: State) => {
-  const c = s.consents.at(-1);
-  return c?.accepted && !c.withdrawnAt && c.version === config.consentVersion
-    ? c
-    : undefined;
-};
 export const makeConsent = (accepted: boolean): Consent => ({
   id: uid(),
   participantId: config.participantId,
@@ -232,11 +249,19 @@ export const makeConsent = (accepted: boolean): Consent => ({
   timestamp: new Date().toISOString(),
   accepted,
   scope:
-    "Biodiversity photographs, identifications, dates, locations, and survey metadata for authorised biodiversity research; local prototype only.",
+    "Local biodiversity participation agreement. Only observations explicitly submitted with a research permission receipt are available in the research demonstration; private collection and game data are excluded.",
 });
 export function enrichTask(t: Task): Task {
   return {
-    recommendedSiteId: ({ tree: "site-a", birds: "site-c", spotter: "site-c", leaf: "site-d", pollinator: "site-b" } as Record<string, string>)[t.id],
+    recommendedSiteId: (
+      {
+        tree: "site-a",
+        birds: "site-c",
+        spotter: "site-c",
+        leaf: "site-d",
+        pollinator: "site-b",
+      } as Record<string, string>
+    )[t.id],
     ...(t.id === "tree"
       ? {
           projectId: "urban-habitats",
@@ -318,30 +343,174 @@ export const exampleSites: Site[] = [
 // Explicit, shared field stories. Dates are fixed for a repeatable presentation;
 // none of these entries asserts a real occurrence at the example public areas.
 const demoVisits: [number | null, number, string, string, string][] = [
-  [5, 0, "09-09T09:10", "tree", "Same path-side tree; juvenile foliage visible in the example photo."],
-  [3, 1, "09-12T10:20", "pollinator", "A flower visitor paused at the purple flower bed during the timed watch."],
-  [1, 2, "09-15T08:15", "birds", "Two small birds moved through low shrubs; watched from the path."],
-  [2, 3, "09-18T11:05", "tree", "Yellow flower heads noted on a planted wattle beside the campus walk."],
-  [1, 4, "09-20T08:40", "birds", "A bird stayed in dense planting near the reed-edge path."],
-  [2, 5, "09-23T14:25", "tree", "Flowering branch photographed from the garden path; no plant material collected."],
-  [3, 1, "09-25T10:20", "pollinator", "Returned to the same flower bed; visitor activity noted during five minutes."],
-  [4, 2, "10-04T07:55", "birds", "One bird perched above the woodland path; no playback or feeding."],
-  [5, 3, "10-06T11:05", "tree", "Repeat tree visit from the same side; leaves and visible canopy noted."],
-  [3, 1, "10-08T10:20", "pollinator", "Blue-banded visitor briefly hovered between flowers; identification needs checking."],
-  [5, 4, "10-10T09:30", "tree", "Planted eucalypt foliage recorded beside the wetland approach, away from the water."],
-  [5, 0, "10-11T09:10", "tree", "Same tree and photo direction as September; visible foliage documented again."],
-  [3, 5, "10-12T14:25", "", "Single flower visitor seen on a small flowering border during a casual walk."],
-  [5, 0, "10-13T09:10", "tree", "Third monitoring visit; notes describe visible leaves without inferring tree health."],
-  [3, 6, "10-15T10:35", "", "Flower visitor photographed from the public garden entrance; no nest approached."],
-  [0, 2, "10-17T08:15", "birds", "Three lorikeets visited a flowering tree during a stationary watch."],
-  [0, 0, "10-18T09:10", "birds", "Lorikeets called from the canopy above the established monitoring path."],
-  [2, 3, "10-19T11:05", "tree", "Revisited the same wattle; flower heads and survey effort recorded."],
-  [4, 4, "10-20T08:40", "birds", "A perched kookaburra observed from a designated path; distance maintained."],
-  [3, 1, "10-21T10:20", "pollinator", "Fourth visit to the flowering edge. One more visit completes this demo protocol."],
-  [3, 7, "10-21T13:45", "", "Flower visitor passed through the courtyard planting during a short photo stop."],
-  [0, 5, "10-22T08:30", "birds", "Two lorikeets moved between garden trees during five minutes of observation."],
-  [2, 7, "10-22T11:15", "tree", "Wattle leaves and remaining flower heads documented beside the courtyard."],
-  [null, 6, "10-22T12:05", "", "Unidentified insect; sensitive-location example requiring additional review."],
+  [
+    5,
+    0,
+    "09-09T09:10",
+    "tree",
+    "Same path-side tree; juvenile foliage visible in the example photo.",
+  ],
+  [
+    3,
+    1,
+    "09-12T10:20",
+    "pollinator",
+    "A flower visitor paused at the purple flower bed during the timed watch.",
+  ],
+  [
+    1,
+    2,
+    "09-15T08:15",
+    "birds",
+    "Two small birds moved through low shrubs; watched from the path.",
+  ],
+  [
+    2,
+    3,
+    "09-18T11:05",
+    "tree",
+    "Yellow flower heads noted on a planted wattle beside the campus walk.",
+  ],
+  [
+    1,
+    4,
+    "09-20T08:40",
+    "birds",
+    "A bird stayed in dense planting near the reed-edge path.",
+  ],
+  [
+    2,
+    5,
+    "09-23T14:25",
+    "tree",
+    "Flowering branch photographed from the garden path; no plant material collected.",
+  ],
+  [
+    3,
+    1,
+    "09-25T10:20",
+    "pollinator",
+    "Returned to the same flower bed; visitor activity noted during five minutes.",
+  ],
+  [
+    4,
+    2,
+    "10-04T07:55",
+    "birds",
+    "One bird perched above the woodland path; no playback or feeding.",
+  ],
+  [
+    5,
+    3,
+    "10-06T11:05",
+    "tree",
+    "Repeat tree visit from the same side; leaves and visible canopy noted.",
+  ],
+  [
+    3,
+    1,
+    "10-08T10:20",
+    "pollinator",
+    "Blue-banded visitor briefly hovered between flowers; identification needs checking.",
+  ],
+  [
+    5,
+    4,
+    "10-10T09:30",
+    "tree",
+    "Planted eucalypt foliage recorded beside the wetland approach, away from the water.",
+  ],
+  [
+    5,
+    0,
+    "10-11T09:10",
+    "tree",
+    "Same tree and photo direction as September; visible foliage documented again.",
+  ],
+  [
+    3,
+    5,
+    "10-12T14:25",
+    "",
+    "Single flower visitor seen on a small flowering border during a casual walk.",
+  ],
+  [
+    5,
+    0,
+    "10-13T09:10",
+    "tree",
+    "Third monitoring visit; notes describe visible leaves without inferring tree health.",
+  ],
+  [
+    3,
+    6,
+    "10-15T10:35",
+    "",
+    "Flower visitor photographed from the public garden entrance; no nest approached.",
+  ],
+  [
+    0,
+    2,
+    "10-17T08:15",
+    "birds",
+    "Three lorikeets visited a flowering tree during a stationary watch.",
+  ],
+  [
+    0,
+    0,
+    "10-18T09:10",
+    "birds",
+    "Lorikeets called from the canopy above the established monitoring path.",
+  ],
+  [
+    2,
+    3,
+    "10-19T11:05",
+    "tree",
+    "Revisited the same wattle; flower heads and survey effort recorded.",
+  ],
+  [
+    4,
+    4,
+    "10-20T08:40",
+    "birds",
+    "A perched kookaburra observed from a designated path; distance maintained.",
+  ],
+  [
+    3,
+    1,
+    "10-21T10:20",
+    "pollinator",
+    "Fourth visit to the flowering edge. One more visit completes this demo protocol.",
+  ],
+  [
+    3,
+    7,
+    "10-21T13:45",
+    "",
+    "Flower visitor passed through the courtyard planting during a short photo stop.",
+  ],
+  [
+    0,
+    5,
+    "10-22T08:30",
+    "birds",
+    "Two lorikeets moved between garden trees during five minutes of observation.",
+  ],
+  [
+    2,
+    7,
+    "10-22T11:15",
+    "tree",
+    "Wattle leaves and remaining flower heads documented beside the courtyard.",
+  ],
+  [
+    null,
+    6,
+    "10-22T12:05",
+    "",
+    "Unidentified insect; sensitive-location example requiring additional review.",
+  ],
 ];
 export function seedState(s: State): State {
   const consent = activeConsent(s);
@@ -354,7 +523,10 @@ export function seedState(s: State): State {
     claimed: ["tree", "spotter"],
     ecosystem: [0, 1, 2, 3, 4, 5],
     projects: s.projects?.length ? s.projects : initialProjects,
-    tasks: [...s.tasks, ...initialTasks.filter((t) => !s.tasks.some((old) => old.id === t.id))].map(enrichTask),
+    tasks: [
+      ...s.tasks,
+      ...initialTasks.filter((t) => !s.tasks.some((old) => old.id === t.id)),
+    ].map(enrichTask),
     sites: exampleSites.map((x) => ({ ...x })),
     game: {
       ...newGame(),
@@ -371,7 +543,9 @@ export function seedState(s: State): State {
         speciesId: id,
         provisional: id === null ? "Insects" : "",
         observedAt,
-        createdAt: new Date(new Date(observedAt).getTime() + 5 * 60000).toISOString(),
+        createdAt: new Date(
+          new Date(observedAt).getTime() + 5 * 60000,
+        ).toISOString(),
         location: site.location,
         coordinates: site.coordinates,
         uncertainty: site.uncertainty,
@@ -380,13 +554,25 @@ export function seedState(s: State): State {
             ? "Identification unconfirmed"
             : "User-confirmed demo identification",
         review:
+          i === 20
+            ? "Not submitted"
+            : i % 7 === 0
+              ? "Needs clarification"
+              : i % 4 === 0
+                ? "Demo reviewed"
+                : "Awaiting review",
+        reviewNotes:
           i % 7 === 0
-            ? "Needs clarification"
+            ? "Demo review: revisit the identification details and survey notes. No expert verification performed."
             : i % 4 === 0
-              ? "Demo reviewed"
-              : "Awaiting review",
-        reviewNotes: i % 7 === 0 ? "Demo review: revisit the identification details and survey notes. No expert verification performed." : i % 4 === 0 ? "Demo completeness check only; not a verified occurrence." : "",
-        method: taskId === "pollinator" || taskId === "birds" ? "Timed stationary survey" : i % 2 ? "Photo observation" : "Visual observation",
+              ? "Demo completeness check only; not a verified occurrence."
+              : "",
+        method:
+          taskId === "pollinator" || taskId === "birds"
+            ? "Timed stationary survey"
+            : i % 2
+              ? "Photo observation"
+              : "Visual observation",
         notes: "Fictional demonstration visit. " + note,
         taskId,
         projectId:
@@ -396,14 +582,111 @@ export function seedState(s: State): State {
         sensitive: id === null,
         provenance: "Seeded demonstration · fictional observation",
         recordType: "HumanObservation" as const,
+        research:
+          i === 20
+            ? { status: "private" as const }
+            : {
+                status: "submitted" as const,
+                receiptId: `demo-receipt-${i + 1}`,
+                submittedAt: new Date(
+                  new Date(observedAt).getTime() + 5 * 60000,
+                ).toISOString(),
+                agreementVersion: consent.version,
+                scope: researchScope,
+                events: [
+                  {
+                    action: "submitted" as const,
+                    timestamp: new Date(
+                      new Date(observedAt).getTime() + 5 * 60000,
+                    ).toISOString(),
+                  },
+                ],
+              },
         individuals: 1 + (i % 3),
         duration: taskId ? 5 : 2 + (i % 4),
         habitat: site.habitat,
-        activity: id === 2 || id === 5 ? "Foliage and flowering noted" : id === 3 ? "Visiting flowers" : "Observed from path",
-        weather: ["Example: clear", "Example: light cloud", "Example: light breeze"][i % 3],
+        activity:
+          id === 2 || id === 5
+            ? "Foliage and flowering noted"
+            : id === 3
+              ? "Visiting flowers"
+              : "Observed from path",
+        weather: [
+          "Example: clear",
+          "Example: light cloud",
+          "Example: light breeze",
+        ][i % 3],
       };
     }),
   };
+}
+function normaliseObservation(
+  o: Observation,
+  consents: Consent[],
+): Observation {
+  const defaults: Partial<Observation> = {
+    contributor: "Not recorded",
+    provisional: "",
+    createdAt: "",
+    uncertainty: 0,
+    identification: "Identification unconfirmed",
+    review: "Not submitted",
+    reviewNotes: "",
+    method: "Not recorded",
+    notes: "",
+    taskId: "",
+    siteId: "",
+    consentId: "",
+    sensitive: false,
+    provenance: "Legacy observation · incomplete metadata",
+    recordType: "HumanObservation",
+    individuals: 0,
+    duration: 0,
+    habitat: "Not recorded",
+    activity: "",
+    weather: "",
+  };
+  const next = { ...o };
+  const missing = [...(o.missingFields || [])];
+  for (const [field, value] of Object.entries(defaults)) {
+    if (
+      next[field as keyof Observation] === undefined ||
+      next[field as keyof Observation] === null
+    ) {
+      Object.assign(next, { [field]: value });
+      missing.push(field);
+    }
+  }
+  if (!Number.isInteger(o.speciesId) || !species[o.speciesId!]) {
+    next.speciesId = null;
+    next.provisional = o.provisional || "Unconfirmed organism";
+  }
+  if (
+    next.coordinates &&
+    (!Number.isFinite(next.coordinates.lat) ||
+      !Number.isFinite(next.coordinates.lon) ||
+      Math.abs(next.coordinates.lat) > 90 ||
+      Math.abs(next.coordinates.lon) > 180)
+  ) {
+    delete next.coordinates;
+    missing.push("coordinates");
+  }
+  if (missing.length) next.missingFields = [...new Set(missing)];
+  next.research =
+    o.research ||
+    (consents.some(
+      (c) => c.id === o.consentId && c.accepted && c.version === "1.0",
+    )
+      ? {
+          status: "submitted",
+          receiptId: `legacy-receipt-${o.id}`,
+          submittedAt: o.createdAt,
+          agreementVersion: "1.0",
+          scope:
+            "Shared under the recorded version 1.0 participation agreement.",
+        }
+      : { status: "private" });
+  return next;
 }
 export function migrateState(input: Partial<State>): State {
   const base = { ...emptyState(), ...input };
@@ -417,6 +700,9 @@ export function migrateState(input: Partial<State>): State {
     );
   const migrated: State = {
     ...base,
+    observations: base.observations.map((o) =>
+      normaliseObservation(o, base.consents),
+    ),
     startMode: input.startMode || "demo",
     tasks: (base.tasks || initialTasks).map(enrichTask),
     projects: base.projects || initialProjects,
@@ -429,104 +715,73 @@ export function migrateState(input: Partial<State>): State {
   };
   // Older empty profiles never recorded a Fresh/Demo choice. The presentation
   // default can fill those safely, but never replace existing records/progress.
-  return !input.startMode && !base.observations.length && !base.xp && !base.claimed.length && !base.ecosystem.length && activeConsent(base)
+  return !input.startMode &&
+    !base.observations.length &&
+    !base.xp &&
+    !base.claimed.length &&
+    !base.ecosystem.length &&
+    activeConsent(base)
     ? seedState(migrated)
     : migrated;
-}
-export function characterProgress(s: State, id: number) {
-  const growth = Math.max(0, Math.min(300, s.game.characterGrowth[id] || 0));
-  return {
-    growth,
-    stage: growth < 100 ? 1 : growth < 200 ? 2 : 3,
-    level: 1 + Math.floor(growth / 25),
-    percent: growth === 300 ? 100 : growth % 100,
-  };
 }
 export const biomeFor = (id: number): BiomeId =>
   id === 5 ? "wetland" : id === 2 || id === 3 ? "meadow" : "woodland";
 export const biomeLabel = (id: number) =>
-  ({ meadow: "Meadow", woodland: "Woodland", wetland: "Misty Grove" })[biomeFor(id)];
+  ({ meadow: "Meadow", woodland: "Woodland", wetland: "Misty Grove" })[
+    biomeFor(id)
+  ];
 export function taskDestination(t: Task, s: State): Site | undefined {
   if (t.recommendedSiteId)
-    return s.sites.find((site) => site.id === t.recommendedSiteId) || exampleSites.find((site) => site.id === t.recommendedSiteId);
-  const previous = s.observations.find((o) => o.taskId === t.id && o.siteId && !o.sensitive);
-  return previous ? s.sites.find((site) => site.id === previous.siteId) : undefined;
-}
-export function feedCharacter(s: State, id: number): State {
-  if (
-    !speciesIds(s).includes(id) ||
-    s.game.availableGrowthXP < 10 ||
-    characterProgress(s, id).growth >= 300
-  )
-    return s;
-  return {
-    ...s,
-    game: {
-      ...s.game,
-      availableGrowthXP: s.game.availableGrowthXP - 10,
-      characterGrowth: {
-        ...s.game.characterGrowth,
-        [id]: Math.min(300, characterProgress(s, id).growth + 10),
-      },
-    },
-  };
+    return (
+      s.sites.find((site) => site.id === t.recommendedSiteId) ||
+      exampleSites.find((site) => site.id === t.recommendedSiteId)
+    );
+  const previous = s.observations.find(
+    (o) => o.taskId === t.id && o.siteId && !o.sensitive,
+  );
+  return previous &&
+    !s.observations.some((o) => o.siteId === previous.siteId && o.sensitive)
+    ? s.sites.find((site) => site.id === previous.siteId && !!site.coordinates)
+    : undefined;
 }
 export const repository = {
   load(): State {
     try {
-      const s = JSON.parse(localStorage.getItem(config.storageKey) || "null");
-      return s && Array.isArray(s.consents) && Array.isArray(s.observations)
-        ? migrateState(s)
-        : emptyState();
+      const raw = localStorage.getItem(config.storageKey);
+      if (!raw) return emptyState();
+      const s = JSON.parse(raw);
+      if (
+        !s ||
+        !Array.isArray(s.consents) ||
+        !Array.isArray(s.observations) ||
+        !s.observations.every(
+          (o: Observation) =>
+            o &&
+            typeof o.id === "string" &&
+            typeof o.observedAt === "string" &&
+            typeof o.location === "string",
+        )
+      )
+        return { ...emptyState(), recoveryRequired: true };
+      if (
+        ["claimed", "ecosystem", "tasks", "sites", "projects"].some(
+          (key) => s[key] !== undefined && !Array.isArray(s[key]),
+        )
+      )
+        return { ...emptyState(), recoveryRequired: true };
+      return migrateState(s);
     } catch {
-      return emptyState();
+      return { ...emptyState(), recoveryRequired: true };
     }
   },
   save(s: State) {
+    if (s.recoveryRequired)
+      throw new Error(
+        "Saved data needs recovery. The original browser data has been preserved.",
+      );
     localStorage.setItem(config.storageKey, JSON.stringify(s));
   },
 };
-export function speciesIds(s: State) {
-  return [
-    ...new Set(
-      s.observations.flatMap((o) =>
-        o.speciesId === null ? [] : [o.speciesId],
-      ),
-    ),
-  ];
-}
-export function taskProgress(t: Task, s: State) {
-  if (t.id === "spotter")
-    return (
-      Math.min(
-        2,
-        speciesIds(s).filter((id) => species[id].category === "Birds").length,
-      ) / 2
-    );
-  if (t.id === "leaf")
-    return (
-      Math.min(
-        2,
-        speciesIds(s).filter((id) => species[id].category === "Plants").length,
-      ) / 2
-    );
-  const visits = s.observations.filter((o) => o.taskId === t.id);
-  const required = t.repeatVisits || 1;
-  return Math.min(
-    1,
-    required > 1
-      ? Math.max(
-          0,
-          ...[...new Set(visits.map((o) => o.siteId).filter(Boolean))].map(
-            (id) =>
-              new Set(
-                visits.filter((o) => o.siteId === id).map((o) => o.observedAt),
-              ).size,
-          ),
-        ) / required
-      : visits.length / required,
-  );
-}
 export function exportRows(rows: Observation[]) {
   return rows.map((o) => ({
     occurrenceID: o.id,
@@ -535,11 +790,16 @@ export function exportRows(rows: Observation[]) {
     vernacularName:
       o.speciesId === null ? o.provisional : species[o.speciesId].name,
     locality: o.sensitive ? "Restricted" : o.location,
-    coordinateUncertaintyInMeters: o.sensitive ? "" : o.uncertainty,
+    coordinateUncertaintyInMeters:
+      o.sensitive || o.missingFields?.includes("uncertainty")
+        ? ""
+        : o.uncertainty,
     samplingProtocol: o.method,
     basisOfRecord: o.recordType,
-    individualCount: o.individuals,
-    samplingEffort: o.duration,
+    individualCount: o.missingFields?.includes("individuals")
+      ? ""
+      : o.individuals,
+    samplingEffort: o.missingFields?.includes("duration") ? "" : o.duration,
     identificationVerificationStatus: o.identification,
     reviewStatus: o.review,
     taskId: o.taskId,

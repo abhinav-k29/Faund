@@ -19,12 +19,19 @@ import {
   TreePine,
 } from "lucide-react";
 import { useApp } from "./context";
-import { BiomeId, characterProgress, feedCharacter, speciesIds, biomeFor } from "./store";
+import {
+  BiomeId,
+  characterProgress,
+  feedCharacter,
+  speciesIds,
+  biomeFor,
+} from "./store";
 import { Creature, Landscape } from "./Art";
 import { species } from "./data";
 import { Button, Heading, Modal, Pill } from "./ui";
 import { Scene } from "./scene";
 import { communityWorlds } from "./community-data";
+import { companionDetails } from "./companion-data";
 export { biomeFor } from "./store";
 const biomes: [BiomeId, string, string][] = [
   ["meadow", "Meadow", "Flowers & little wings"],
@@ -168,6 +175,22 @@ export function CharacterPage() {
         </div>
       )}
       <CharacterControls id={character.id} />
+      <section className="character-story">
+        <span className="eyebrow">
+          {companionDetails[character.id].stages[p.stage - 1]} · YOUR CURRENT
+          STAGE
+        </span>
+        <h3>A little personality</h3>
+        <p>{companionDetails[character.id].personality}</p>
+        <details>
+          <summary>Character anatomy & accessible description</summary>
+          <p>{companionDetails[character.id].anatomy}</p>
+          <p>
+            Original fictional companion. Growth stages are gameplay, not a
+            description of the real organism’s life cycle.
+          </p>
+        </details>
+      </section>
       <div className="info-card">
         <Sparkles />
         <div>
@@ -325,7 +348,16 @@ export function ExploreWorlds() {
                     <TreePine size={19} />
                   )}
                 </span>
-                <strong>{name} <span className="biome-count">{state.ecosystem.filter((c) => ids.includes(c) && biomeFor(c) === id).length}</span></strong>
+                <strong>
+                  {name}{" "}
+                  <span className="biome-count">
+                    {
+                      state.ecosystem.filter(
+                        (c) => ids.includes(c) && biomeFor(c) === id,
+                      ).length
+                    }
+                  </span>
+                </strong>
                 <small>
                   {available(id) ? sub : "Discover more life to unlock"}
                 </small>
