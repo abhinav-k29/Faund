@@ -40,6 +40,15 @@ export class RouteBoundary extends React.Component<
 export function StorageRecovery() {
   const { state } = useApp();
   const [confirm, setConfirm] = useState(false);
+  if (state.storageUnavailable)
+    return (
+      <aside className="storage-recovery" role="status">
+        <p>
+          Browser storage is disabled. You can explore, but changes will last
+          only until this tab closes. Enable storage to keep your journal.
+        </p>
+      </aside>
+    );
   if (!state.recoveryRequired) return null;
   return (
     <section className="storage-recovery" role="alert">
@@ -82,7 +91,10 @@ export function StorageRecovery() {
               sessionStorage.removeItem(draftKey);
               localStorage.setItem(
                 config.storageKey,
-                JSON.stringify(emptyState("fresh")),
+                JSON.stringify({
+                  ...emptyState("fresh"),
+                  ...(config.showcase ? { showcaseVersion: 1 } : {}),
+                }),
               );
               window.location.assign("/");
             }}

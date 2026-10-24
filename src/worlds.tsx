@@ -1,3 +1,4 @@
+import { config } from "./config";
 import { useEffect, useState } from "react";
 import {
   Link,
@@ -275,8 +276,9 @@ export function ExploreWorlds() {
             <Pill>FICTIONAL EXAMPLES</Pill>
           </div>
           <p>
-            See the little worlds other explorers could grow. Curated mock
-            profiles demonstrate opt-in sharing of game assets only.
+            {config.showcase
+              ? "Wander through three curated fictional gardens. Only characters and scenery are shared here; scientific observations stay private."
+              : "See the little worlds other explorers could grow. Curated mock profiles demonstrate opt-in sharing of game assets only."}
           </p>
           <div className="community-gallery">
             {communityWorlds.map((world) => (
@@ -301,7 +303,8 @@ export function ExploreWorlds() {
                 </div>
                 <div className="community-copy">
                   <span className="eyebrow">
-                    {world.username} · MOCK PROFILE
+                    {world.username}
+                    {!config.showcase && " · MOCK PROFILE"}
                   </span>
                   <h2>{world.name}</h2>
                   <p>
@@ -403,7 +406,9 @@ export function ExploreWorlds() {
                   ? "a bird"
                   : "Tasmanian Blue Gum"}{" "}
               and add its companion from the two-sided card. No real-world
-              travel is needed for demo samples.
+              {config.showcase
+                ? "travel is needed to explore the field guide."
+                : "travel is needed for demo samples."}
             </p>
           )}
           <div className="info-card">
@@ -468,7 +473,10 @@ export function CommunityViewer() {
   return (
     <>
       <Heading
-        eyebrow={world.username + " · FICTIONAL MOCK PROFILE"}
+        eyebrow={
+          world.username +
+          (config.showcase ? " · COMMUNITY WORLD" : " · FICTIONAL MOCK PROFILE")
+        }
         title={world.name}
         sub="Community world · public game assets only"
         back

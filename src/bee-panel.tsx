@@ -1,3 +1,4 @@
+import { config } from "./config";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Check, Leaf, Search, Sparkles } from "lucide-react";
@@ -14,7 +15,10 @@ export function BeePanel({
   const [compare, setCompare] = useState(false);
   const bee = species[3];
   return (
-    <section className="bee-field-panel" aria-label="Bee demo field entry">
+    <section
+      className="bee-field-panel"
+      aria-label={config.showcase ? "Bee field entry" : "Bee demo field entry"}
+    >
       <div className="section-mini">
         <span>FIELD ENTRY · NO. 004</span>
         <Sparkles size={16} />
@@ -23,7 +27,11 @@ export function BeePanel({
       <p className="latin">{bee.latin}</p>
       <div className="bee-entry-tags">
         <Pill>INSECT / POLLINATOR</Pill>
-        <Pill lavender>DEMO SUGGESTION · UNVERIFIED</Pill>
+        <Pill lavender>
+          {config.showcase
+            ? "FIELD GUIDE · UNVERIFIED"
+            : "DEMO SUGGESTION · UNVERIFIED"}
+        </Pill>
       </div>
       <h3>Look for these details</h3>
       <ul className="bee-markers">
@@ -62,7 +70,8 @@ export function BeePanel({
       </button>
       <div className="button-row">
         <Button onClick={onConfirm}>
-          Looks Right · Demo <Check size={16} />
+          {config.showcase ? "Explore This Bee" : "Looks Right · Demo"}{" "}
+          <Check size={16} />
         </Button>
         <Button secondary onClick={onUncertain}>
           Not Sure
@@ -88,7 +97,9 @@ export function BeePanel({
           <p>
             Blue bands are a useful clue, but they do not confirm{" "}
             <i>A. cingulata</i>. Several blue-banded bee species look similar.
-            This prototype does not distinguish them from your image.
+            {config.showcase
+              ? "A photograph alone may not distinguish these species."
+              : "This prototype does not distinguish them from your image."}
           </p>
           <dl className="metadata">
             <dt>Compare</dt>
@@ -98,7 +109,7 @@ export function BeePanel({
               Use an unconfirmed insect record when species-level detail is
               unclear.
             </dd>
-            <dt>Demo example</dt>
+            <dt>{config.showcase ? "Field-guide entry" : "Demo example"}</dt>
             <dd>
               Blue-banded Bee · <i>Amegilla cingulata</i>
             </dd>
@@ -117,7 +128,9 @@ export function BeePanel({
               onConfirm();
             }}
           >
-            Continue with Demo Example
+            {config.showcase
+              ? "Continue with This Organism"
+              : "Continue with Demo Example"}
           </Button>
           <Button
             secondary

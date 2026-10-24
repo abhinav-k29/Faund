@@ -143,14 +143,17 @@ export function Researcher() {
         ))}
         <div className="sidebar-bottom">
           <span>
-            <span className="live-dot" /> Local demonstration
+            <span className="live-dot" />{" "}
+            {config.showcase ? "Local workspace" : "Local demonstration"}
           </span>
           <Link to="/home">
             <ArrowLeft size={16} /> Explorer app
           </Link>
-          <Link to="/showcase">
-            <ArrowUpRight size={16} /> Showcase
-          </Link>
+          {!config.showcase && (
+            <Link to="/showcase">
+              <ArrowUpRight size={16} /> Showcase
+            </Link>
+          )}
         </div>
       </aside>
       <main className="research-main">
@@ -166,7 +169,9 @@ export function Researcher() {
                     ? "Research tasks"
                     : view === "Observations"
                       ? "Observation library"
-                      : "Researcher Demonstration"}
+                      : config.showcase
+                        ? "Research workspace"
+                        : "Researcher Demonstration"}
             </h1>
             <p>
               Community curiosity. Structured observations. Better questions.
@@ -177,7 +182,9 @@ export function Researcher() {
               <FlaskConical size={22} />
             </span>
             <div>
-              <strong>Demo Researcher</strong>
+              <strong>
+                {config.showcase ? "Research tools" : "Demo Researcher"}
+              </strong>
               <small>Local workspace · no authentication</small>
             </div>
           </div>
@@ -185,9 +192,9 @@ export function Researcher() {
         <div className="demo-banner">
           <Info size={20} />
           <span>
-            Local research pipeline simulation. All records are demonstration
-            data in this browser. Reviews are simulated; nothing is transmitted
-            to researchers.
+            {config.showcase
+              ? "Fictional learning records, unverified identifications. Explore protocols and data review; nothing is submitted to researchers."
+              : "Local research pipeline simulation. All records are demonstration data in this browser. Reviews are simulated; nothing is transmitted to researchers."}
           </span>
         </div>
         {view === "Research Projects" ? (
@@ -205,7 +212,9 @@ export function Researcher() {
               <h2>Questions that begin outside.</h2>
               <span>
                 {state.tasks.filter((t) => t.type === "Research").length}{" "}
-                demonstration protocols
+                {config.showcase
+                  ? "fieldwork protocols"
+                  : "demonstration protocols"}
               </span>
             </div>
             <div className="research-task-grid">
@@ -231,7 +240,8 @@ export function Researcher() {
                       </dd>
                     </dl>
                     <Button secondary onClick={() => setEdit({ ...t })}>
-                      Edit Demo Task <ArrowRight size={18} />
+                      {config.showcase ? "Edit Task" : "Edit Demo Task"}{" "}
+                      <ArrowRight size={18} />
                     </Button>
                     <button
                       className="text-link"
@@ -264,8 +274,10 @@ export function Researcher() {
                   MapPin,
                 ],
                 [
-                  "Awaiting review",
-                  rows.filter((o) => o.review === "Awaiting review").length,
+                  config.showcase ? "Unverified records" : "Awaiting review",
+                  config.showcase
+                    ? rows.length
+                    : rows.filter((o) => o.review === "Awaiting review").length,
                   Search,
                 ],
                 [
@@ -284,7 +296,11 @@ export function Researcher() {
                       <I size={19} />
                     </span>
                     <strong>{String(num)}</strong>
-                    <small>Local demonstration dataset</small>
+                    <small>
+                      {config.showcase
+                        ? "Fictional learning dataset"
+                        : "Local demonstration dataset"}
+                    </small>
                   </div>
                 );
               })}
@@ -352,7 +368,11 @@ export function Researcher() {
                   <option value="Unconfirmed">
                     Unconfirmed identification
                   </option>
-                  <option value="Confirmed">User-confirmed demo</option>
+                  <option value="Confirmed">
+                    {config.showcase
+                      ? "Selected organism · unverified"
+                      : "User-confirmed demo"}
+                  </option>
                 </select>
                 <label className="uncertainty-filter">
                   Location uncertainty ≤ m
@@ -371,9 +391,13 @@ export function Researcher() {
                 >
                   <option value="All">All review statuses</option>
                   {[
-                    "Awaiting review",
-                    "Demo reviewed",
-                    "Needs clarification",
+                    ...(config.showcase
+                      ? ["Unverified", "Details checked", "Needs clarification"]
+                      : [
+                          "Awaiting review",
+                          "Demo reviewed",
+                          "Needs clarification",
+                        ]),
                   ].map((c) => (
                     <option key={c}>{c}</option>
                   ))}
@@ -556,7 +580,10 @@ export function Researcher() {
                 <div>
                   <h2>Observation records</h2>
                   <p>
-                    {rows.length} matching records · consent-linked demo data
+                    {rows.length} matching records ·{" "}
+                    {config.showcase
+                      ? "fictional learning records"
+                      : "consent-linked demo data"}
                   </p>
                 </div>
                 <Button
@@ -615,9 +642,11 @@ export function Researcher() {
                         <td>
                           <code>{o.id.slice(0, 10)}</code>
                           <small>
-                            {o.provenance.includes("Seeded")
-                              ? "SAMPLE"
-                              : "LOCAL DEMO"}
+                            {config.showcase
+                              ? "LEARNING RECORD"
+                              : o.provenance.includes("Seeded")
+                                ? "SAMPLE"
+                                : "LOCAL DEMO"}
                           </small>
                         </td>
                         <td>
@@ -719,7 +748,10 @@ export function Researcher() {
         )}
         <footer className="research-footer">
           <Leaf size={16} />
-          {config.name} · local research demonstration
+          {config.name} ·{" "}
+          {config.showcase
+            ? "research workspace"
+            : "local research demonstration"}
           <span>Discover → Record → Review → Understand</span>
         </footer>
       </main>
@@ -800,7 +832,8 @@ export function Researcher() {
               </select>
             </label>
             <Button type="submit">
-              Save Demo Task <Check size={18} />
+              {config.showcase ? "Save Task" : "Save Demo Task"}{" "}
+              <Check size={18} />
             </Button>
           </form>
         </Modal>

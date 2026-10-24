@@ -4,10 +4,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173 --strictPort",
+    "dev:research": "vite --mode research --host 0.0.0.0 --port 5173 --strictPort",
     "build": "tsc -b && vite build",
+    "build:research": "tsc -b && vite build --mode research",
     "preview": "vite preview --host 0.0.0.0",
     "test:journey": "node tests/journey.mjs",
     "test:pwa": "node tests/pwa.mjs",
+    "test:public": "node tests/public-release.mjs",
     "test:quality": "node tests/quality.mjs",
     "test:upgrades": "node tests/upgrades.mjs",
     "test:responsive": "node tests/responsive-upgrades.mjs",
@@ -22,6 +25,9 @@
     "typecheck": "tsc -b --pretty false",
     "format": "prettier --write src tests README.md package.json vite.config.ts index.html",
     "format:check": "prettier --check src tests README.md package.json vite.config.ts index.html"
+  },
+  "engines": {
+    "node": "22.x"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",

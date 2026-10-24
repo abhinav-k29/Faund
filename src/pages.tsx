@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { config } from "./config";
+import { returningState } from "./store";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ArrowRight,
@@ -91,7 +93,7 @@ export function Home() {
           Scout
         </Pill>
       </div>
-      {state.mode === "Demo Explorer" ? (
+      {!config.showcase && state.mode === "Demo Explorer" ? (
         <div className="demo-journal-strip">
           <Pill>DEMO EXPLORER</Pill>
           <span>
@@ -103,11 +105,17 @@ export function Home() {
         !state.observations.length && (
           <button
             className="presentation-load"
-            onClick={() => setState(seedState(state))}
+            onClick={() =>
+              setState(config.showcase ? returningState() : seedState(state))
+            }
           >
             <Sparkles size={20} />
             <span>
-              <strong>Load Demo Explorer</strong>
+              <strong>
+                {config.showcase
+                  ? "Explore the starting journal"
+                  : "Load Demo Explorer"}
+              </strong>
               <small>
                 A collected world, ready to explore. 24 fictional records.
               </small>
@@ -144,6 +152,16 @@ export function Home() {
         </div>
         <ChevronRight size={20} />
       </Link>
+      <Link to="/scan" className="discovery-cta">
+        <span className="camera-disc">
+          <Camera size={25} />
+        </span>
+        <div>
+          <h3>Discover Something New</h3>
+          <p>Your next discovery might be right outside.</p>
+        </div>
+        <ArrowUpRight size={22} />
+      </Link>
       <section className="world-card">
         <div className="section-mini">
           <span>
@@ -174,16 +192,6 @@ export function Home() {
           </span>
         </div>
       </section>
-      <Link to="/scan" className="discovery-cta">
-        <span className="camera-disc">
-          <Camera size={25} />
-        </span>
-        <div>
-          <h3>Discover Something New</h3>
-          <p>Your next discovery might be right outside.</p>
-        </div>
-        <ArrowUpRight size={22} />
-      </Link>
       <div className="section-title">
         <h2>Fresh from your journal</h2>
         <Link to="/collection">
@@ -221,15 +229,18 @@ export function Home() {
           Bigger questions.
         </h2>
         <p>
-          {researchCount} {researchCount === 1 ? "observation" : "observations"}{" "}
-          submitted to the local research demo.
+          {config.showcase
+            ? `${state.observations.length} discoveries in your journal. Every visit starts with a question.`
+            : `${researchCount} ${researchCount === 1 ? "observation" : "observations"} submitted to the local research demo.`}
         </p>
         <span>
           See My Contributions <ArrowRight size={17} />
         </span>
       </Link>
       <p className="footnote">
-        Concept prototype · all research activity is local and simulated.
+        {config.showcase
+          ? "Observe gently. Leave a little wonder for the next explorer."
+          : "Concept prototype · all research activity is local and simulated."}
       </p>
     </>
   );
@@ -420,8 +431,10 @@ export function Collection() {
         </div>
       )}
       <p className="privacy-line">
-        <Lock size={14} /> Private collection · research contribution is your
-        choice.
+        <Lock size={14} />{" "}
+        {config.showcase
+          ? "Private collection · kept on this browser."
+          : "Private collection · research contribution is your choice."}
       </p>
       {!search && category === "All" && ids.length < species.length && (
         <div className="locked-card-strip">
@@ -754,13 +767,16 @@ export function Tasks() {
           })}
       </div>
       <p className="footnote">
-        Rewards recognise participation, not scientific accuracy. Save your
-        protocol notes, then choose whether to submit each record to the
-        research demonstration.
+        {config.showcase
+          ? "Rewards recognise participation, not scientific accuracy. Save protocol notes in your private journal. No research submission is made."
+          : "Rewards recognise participation, not scientific accuracy. Save your protocol notes, then choose whether to submit each record to the research demonstration."}
       </p>
       {detail && (
         <Modal title={detail.title} onClose={() => setDetail(null)}>
-          <Pill>{detail.type} · local demonstration</Pill>
+          <Pill>
+            {detail.type}
+            {!config.showcase && " · local demonstration"}
+          </Pill>
           <h3>Research question</h3>
           <p>{detail.question}</p>
           <h3>How to take part</h3>
@@ -769,7 +785,9 @@ export function Tasks() {
             <p className="task-project-label">
               Project:{" "}
               {state.projects.find((p) => p.id === detail.projectId)?.title ||
-                "Research demonstration"}
+                (config.showcase
+                  ? "Research workspace"
+                  : "Research demonstration")}
             </p>
           )}
           <dl className="metadata">

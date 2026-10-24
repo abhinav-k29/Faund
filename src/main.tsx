@@ -28,6 +28,7 @@ import { config } from "./config";
 import { repository, activeConsent } from "./store";
 import { Logo, Credits } from "./ui";
 import { RouteBoundary, StorageRecovery } from "./recovery";
+import { AppUpdate } from "./updates";
 import { Welcome, ConsentPage, Profile } from "./participation";
 import { Home, Explore as FieldGuide, Collection, Tasks, Sites } from "./pages";
 const DiscoveryMap = React.lazy(() =>
@@ -63,7 +64,7 @@ import "./upgrades.css";
 import "./polish.css";
 function Navigation() {
   const items = [
-    ["/home", HomeIcon, "Home"],
+    [config.homePath, HomeIcon, "Home"],
     ["/map", MapIcon, "Map"],
     ["/scan", Camera, "Scan"],
     ["/collection", Layers, "Collection"],
@@ -75,6 +76,7 @@ function Navigation() {
         <NavLink
           key={url}
           to={url}
+          end={label === "Home"}
           className={({ isActive }) =>
             `${isActive ? "active " : ""}${label === "Scan" ? "scan-nav" : ""}`
           }
@@ -90,7 +92,8 @@ function Navigation() {
 }
 function Gate() {
   const { state } = React.useContext(Context);
-  if (!activeConsent(state)) return <Navigate to="/consent" replace />;
+  if (!config.showcase && !activeConsent(state))
+    return <Navigate to="/consent" replace />;
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -128,7 +131,7 @@ function App() {
   }, []);
   useEffect(() => {
     try {
-      if (!activeConsent(state)) {
+      if (!config.showcase && !activeConsent(state)) {
         sessionStorage.removeItem(draftKey);
         if (Object.keys(draft).length) setDraft({});
       } else if (Object.keys(draft).length)
@@ -143,11 +146,13 @@ function App() {
   useEffect(() => {
     try {
       repository.save(state);
+      if (repository.temporary() && !state.storageUnavailable)
+        setState((s) => ({ ...s, storageUnavailable: true }));
     } catch (error) {
       setMessage(
         error instanceof Error && state.recoveryRequired
           ? error.message
-          : "Storage is full. Remove photo records or reset the demo.",
+          : "Storage is full. Remove an older photo record or export your journal before clearing it.",
       );
     }
   }, [state]);
@@ -161,7 +166,7 @@ function App() {
     }
   }, [message]);
   const wide =
-    loc.pathname.startsWith("/researcher-demo") || loc.pathname === "/showcase";
+    loc.pathname.startsWith("/research") || loc.pathname === "/showcase";
   return (
     <Context.Provider
       value={{ state, setState, draft, setDraft, toast: setMessage }}
@@ -176,21 +181,31 @@ function App() {
               <strong>A world of discovery.</strong>
             </span>
             <p>
-              A working concept for nature lovers
+              A little world for nature lovers
               <br />
               and biodiversity research.
             </p>
-            <Link to="/researcher-demo">
-              Researcher demonstration <ArrowUpRight size={15} />
+            <Link to={config.researchPath}>
+              {config.showcase
+                ? "Research workspace"
+                : "Researcher demonstration"}{" "}
+              <ArrowUpRight size={15} />
             </Link>
-            <Link to="/showcase">
-              Presentation showcase <ArrowUpRight size={15} />
-            </Link>
-            <small>Local prototype · no external submissions</small>
+            {!config.showcase && (
+              <Link to="/showcase">
+                Presentation showcase <ArrowUpRight size={15} />
+              </Link>
+            )}
+            <small>
+              {config.showcase
+                ? "Find the wild. Keep the wonder."
+                : "Local prototype · no external submissions"}
+            </small>
           </div>
         )}
         <div className={wide ? "" : "mobile-app"}>
           <StorageRecovery />
+          <AppUpdate />
           <RouteBoundary resetKey={loc.pathname}>
             <React.Suspense
               fallback={
@@ -201,10 +216,32 @@ function App() {
               }
             >
               <Routes>
-                <Route path="/" element={<Welcome />} />
-                <Route path="/consent" element={<ConsentPage />} />
+                {!config.showcase && <Route path="/" element={<Welcome />} />}
+                <Route
+                  path="/consent"
+                  element={
+                    config.showcase ? (
+                      <Navigate to="/" replace />
+                    ) : (
+                      <ConsentPage />
+                    )
+                  }
+                />
+                {["/welcome", "/onboarding", "/login", "/setup"].map((path) => (
+                  <Route
+                    key={path}
+                    path={path}
+                    element={<Navigate to="/" replace />}
+                  />
+                ))}
                 <Route element={<Gate />}>
-                  <Route path="/home" element={<Home />} />
+                  {config.showcase && <Route path="/" element={<Home />} />}
+                  <Route
+                    path="/home"
+                    element={
+                      config.showcase ? <Navigate to="/" replace /> : <Home />
+                    }
+                  />
                   <Route path="/map" element={<DiscoveryMap />} />
                   <Route path="/explore" element={<ExploreWorlds />} />
                   <Route path="/field-guide" element={<FieldGuide />} />
@@ -224,7 +261,13 @@ function App() {
                   <Route path="/credits" element={<Credits />} />
                 </Route>
                 <Route path="/researcher-demo" element={<Researcher />} />
-                <Route path="/showcase" element={<Showcase />} />
+                <Route path="/research" element={<Researcher />} />
+                <Route
+                  path="/showcase"
+                  element={
+                    config.showcase ? <Navigate to="/" replace /> : <Showcase />
+                  }
+                />
                 <Route path="*" element={<Navigate to="/" />} />
               </Routes>
             </React.Suspense>

@@ -58,6 +58,22 @@
   font-size: 18px;
   letter-spacing: -0.5px;
 }
+.logo > span,
+.research-sidebar .logo > span {
+  width: 44px;
+  height: 44px;
+  background: transparent;
+  border-radius: 0;
+}
+.logo > span img {
+  display: block;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+.discovery-cta + .world-card {
+  margin-top: 18px;
+}
 .logo i {
   font-size: 8px;
   color: #56674e;

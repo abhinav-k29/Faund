@@ -3,7 +3,7 @@ import { config } from "./config";
 import { activeConsent, speciesIds, researchScope } from "./domain";
 export * from "./domain";
 export type ResearchPermission = {
-  status: "private" | "submitted" | "withdrawn";
+  status: "private" | "submitted" | "withdrawn" | "illustrative";
   receiptId?: string;
   submittedAt?: string;
   withdrawnAt?: string;
@@ -25,6 +25,7 @@ export type Consent = {
   withdrawnAt?: string;
 };
 export type Observation = {
+  synthetic?: boolean;
   id: string;
   contributor: string;
   speciesId: number | null;
@@ -137,6 +138,8 @@ export type State = {
   game: GameProgress;
   startMode: "demo" | "fresh";
   recoveryRequired?: boolean;
+  showcaseVersion?: number;
+  storageUnavailable?: boolean;
   visualSettings?: {
     quality: "balanced" | "low" | "illustrated";
     paused: boolean;
@@ -512,10 +515,10 @@ const demoVisits: [number | null, number, string, string, string][] = [
     "Unidentified insect; sensitive-location example requiring additional review.",
   ],
 ];
-export function seedState(s: State): State {
+export function seedState(s: State, publicSeed = false): State {
   const consent = activeConsent(s);
-  if (!consent) return s;
-  return {
+  if (!consent && !publicSeed) return s;
+  const seeded: State = {
     ...s,
     mode: "Demo Explorer",
     startMode: "demo",
@@ -578,7 +581,7 @@ export function seedState(s: State): State {
         projectId:
           taskId === "tree" ? "urban-habitats" : taskId ? "seasonal-life" : "",
         siteId: site.id,
-        consentId: consent.id,
+        consentId: consent?.id || "",
         sensitive: id === null,
         provenance: "Seeded demonstration · fictional observation",
         recordType: "HumanObservation" as const,
@@ -591,7 +594,7 @@ export function seedState(s: State): State {
                 submittedAt: new Date(
                   new Date(observedAt).getTime() + 5 * 60000,
                 ).toISOString(),
-                agreementVersion: consent.version,
+                agreementVersion: consent?.version,
                 scope: researchScope,
                 events: [
                   {
@@ -619,7 +622,62 @@ export function seedState(s: State): State {
       };
     }),
   };
+  return publicSeed ? prepareShowcaseState(seeded) : seeded;
 }
+/** Built-in learning stories are never visitor consent or real research submissions. */
+export function prepareShowcaseState(s: State): State {
+  return {
+    ...s,
+    showcaseVersion: 1,
+    mode: "Nature Scout",
+    tasks: s.tasks.map((t) => ({
+      ...t,
+      instructions: t.instructions
+        .replace("This prototype records", "This protocol records")
+        .replace(" Use the demo samples for the presentation.", ""),
+    })),
+    projects: s.projects.map((p) => ({
+      ...p,
+      description: p.description.replace(
+        "A demonstration of repeated community observations",
+        "A learning project about repeated observations",
+      ),
+    })),
+    observations: s.observations.map((o) => {
+      const builtIn =
+        o.synthetic ||
+        (/^sample-(?:[1-9]|1[0-9]|2[0-4])$/.test(o.id) &&
+          o.provenance.startsWith("Seeded demonstration") &&
+          !o.photo);
+      if (!builtIn) return o;
+      return {
+        ...o,
+        synthetic: true,
+        consentId: "",
+        identification: "Unverified identification",
+        review:
+          o.review === "Demo reviewed"
+            ? "Details checked"
+            : o.review === "Awaiting review"
+              ? "Unverified"
+              : o.review,
+        reviewNotes: o.reviewNotes
+          .replace("Demo review: ", "")
+          .replace("Demo completeness check only", "Completeness check only"),
+        notes: o.notes
+          .replace("Fictional demonstration visit. ", "")
+          .replace("demo protocol", "protocol"),
+        provenance: "Fictional learning record · unverified",
+        research:
+          o.research?.status === "submitted" ||
+          o.research?.status === "illustrative"
+            ? { status: "illustrative" as const }
+            : { status: "private" as const },
+      };
+    }),
+  };
+}
+export const returningState = (): State => seedState(emptyState(), true);
 function normaliseObservation(
   o: Observation,
   consents: Consent[],
@@ -744,11 +802,20 @@ export function taskDestination(t: Task, s: State): Site | undefined {
     ? s.sites.find((site) => site.id === previous.siteId && !!site.coordinates)
     : undefined;
 }
+let memoryState: State | undefined;
+const defaultState = () => (config.showcase ? returningState() : emptyState());
+const recoverState = () => ({ ...defaultState(), recoveryRequired: true });
 export const repository = {
   load(): State {
+    if (memoryState?.storageUnavailable) return memoryState;
+    let raw: string | null;
     try {
-      const raw = localStorage.getItem(config.storageKey);
-      if (!raw) return emptyState();
+      raw = localStorage.getItem(config.storageKey);
+    } catch {
+      return memoryState || { ...defaultState(), storageUnavailable: true };
+    }
+    try {
+      if (!raw) return defaultState();
       const s = JSON.parse(raw);
       if (
         !s ||
@@ -762,16 +829,17 @@ export const repository = {
             typeof o.location === "string",
         )
       )
-        return { ...emptyState(), recoveryRequired: true };
+        return recoverState();
       if (
         ["claimed", "ecosystem", "tasks", "sites", "projects"].some(
           (key) => s[key] !== undefined && !Array.isArray(s[key]),
         )
       )
-        return { ...emptyState(), recoveryRequired: true };
-      return migrateState(s);
+        return recoverState();
+      const migrated = migrateState(s);
+      return config.showcase ? prepareShowcaseState(migrated) : migrated;
     } catch {
-      return { ...emptyState(), recoveryRequired: true };
+      return recoverState();
     }
   },
   save(s: State) {
@@ -779,8 +847,16 @@ export const repository = {
       throw new Error(
         "Saved data needs recovery. The original browser data has been preserved.",
       );
-    localStorage.setItem(config.storageKey, JSON.stringify(s));
+    try {
+      localStorage.setItem(config.storageKey, JSON.stringify(s));
+      memoryState = s;
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "SecurityError") {
+        memoryState = { ...s, storageUnavailable: true };
+      } else throw error;
+    }
   },
+  temporary: () => !!memoryState?.storageUnavailable,
 };
 export function exportRows(rows: Observation[]) {
   return rows.map((o) => ({
@@ -807,6 +883,12 @@ export function exportRows(rows: Observation[]) {
     observationSiteID: o.sensitive ? "Restricted" : o.siteId,
     consentRecordId: o.consentId,
     provenance: o.provenance,
+    ...(o.synthetic
+      ? {
+          dataStatus:
+            "Fictional learning record; not a verified occurrence or research submission",
+        }
+      : {}),
   }));
 }
 export function csvText(rows: Observation[]) {

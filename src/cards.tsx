@@ -1,3 +1,4 @@
+import { config } from "./config";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -237,8 +238,7 @@ export function CardPage() {
           Read the species source <ArrowUpRight size={15} />
         </a>
         <p className="footnote">
-          No conservation classification asserted. Demo identification is not
-          expert verification.{" "}
+          No conservation classification asserted. Identification is unverified.{" "}
           <Link to="/credits">Photo credits &amp; licences</Link>.
         </p>
       </details>

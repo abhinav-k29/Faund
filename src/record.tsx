@@ -21,7 +21,8 @@ export function Record() {
   const task = state.tasks.find((t) => t.id === draft.taskId);
   const site = state.sites.find((x) => x.id === draft.siteId);
   const [location, setLocation] = useState(
-    site?.location || (draft.photo ? "" : "Sydney · example area"),
+    site?.location ||
+      (config.showcase || draft.photo ? "" : "Sydney · example area"),
   );
   const [siteName, setSiteName] = useState(site?.name || "");
   const [siteId, setSiteId] = useState(site?.id || "");
@@ -37,9 +38,13 @@ export function Record() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [provenance] = useState(
-    draft.photo
-      ? "User photo · simulated identification"
-      : "Demo sample identification",
+    config.showcase
+      ? draft.photo
+        ? "Your photograph · manual identification, unverified"
+        : "Field-guide learning entry · unverified"
+      : draft.photo
+        ? "User photo · simulated identification"
+        : "Demo sample identification",
   );
   const [observedAt, setObservedAt] = useState(localTime());
   const [category, setCategory] = useState(s.category);
@@ -55,7 +60,7 @@ export function Record() {
     try {
       const current = repository.load();
       const consent = activeConsent(current);
-      if (!consent) {
+      if (!config.showcase && !consent) {
         n("/consent");
         return;
       }
@@ -84,7 +89,9 @@ export function Record() {
         photo: draft.photo,
         identification: draft.uncertain
           ? "Identification unconfirmed"
-          : "User-confirmed demo identification",
+          : config.showcase
+            ? "Manual identification · unverified"
+            : "User-confirmed demo identification",
         review:
           f.get("researchPermission") === "on"
             ? "Awaiting review"
@@ -95,7 +102,7 @@ export function Record() {
         taskId: task?.id || "",
         projectId: task?.projectId || "",
         siteId: newSiteId,
-        consentId: consent.id,
+        consentId: consent?.id || "",
         sensitive: f.get("sensitive") === "on",
         provenance,
         recordType: "HumanObservation",
@@ -106,7 +113,7 @@ export function Record() {
         weather: String(f.get("weather") || ""),
         research: { status: "private" },
       };
-      if (f.get("researchPermission") === "on")
+      if (!config.showcase && f.get("researchPermission") === "on")
         obs.research = submissionPermission(obs, current);
       const result = recordDiscovery(current, obs);
       const next = {
@@ -178,7 +185,11 @@ export function Record() {
             {draft.uncertain ? "Every discovery starts somewhere." : s.latin}
           </p>
           <Pill>
-            {draft.uncertain ? "Unconfirmed" : "User-confirmed · demo"}
+            {draft.uncertain
+              ? "Unconfirmed"
+              : config.showcase
+                ? "Manual identification · unverified"
+                : "User-confirmed · demo"}
           </Pill>
         </div>
       </div>
@@ -393,30 +404,32 @@ export function Record() {
           <input type="checkbox" name="sensitive" />
           <span>Restrict this location further (sensitive observation).</span>
         </label>
-        <details className="research-save-choice">
-          <summary>Research contribution · your choice</summary>
-          <p>
-            Saving your journal does not submit it to researchers. If you choose
-            to contribute, this observation’s photo, identification, date/time,
-            location and uncertainty, survey effort, habitat and notes become
-            available in this browser’s research demonstration. Sensitive
-            locations and photos remain restricted; collections and game
-            profiles are excluded. No data leaves this browser.
-          </p>
-          <label className="checkbox">
-            <input type="checkbox" name="researchPermission" />
-            <span>
-              I authorise this observation for the local biodiversity research
-              demonstration.
-            </span>
-          </label>
-        </details>
+        {!config.showcase && (
+          <details className="research-save-choice">
+            <summary>Research contribution · your choice</summary>
+            <p>
+              Saving your journal does not submit it to researchers. If you
+              choose to contribute, this observation’s photo, identification,
+              date/time, location and uncertainty, survey effort, habitat and
+              notes become available in this browser’s research demonstration.
+              Sensitive locations and photos remain restricted; collections and
+              game profiles are excluded. No data leaves this browser.
+            </p>
+            <label className="checkbox">
+              <input type="checkbox" name="researchPermission" />
+              <span>
+                I authorise this observation for the local biodiversity research
+                demonstration.
+              </span>
+            </label>
+          </details>
+        )}
         <div className="notice">
           <ShieldCheck size={20} />
           <p>
-            Save to your private journal. Research contribution is a separate
-            choice above, or later in My Contributions. Nothing is sent outside
-            this browser.
+            {config.showcase
+              ? "Saved only in your private journal on this browser. Identification is unverified. No research submission is made."
+              : "Save to your private journal. Research contribution is a separate choice above, or later in My Contributions. Nothing is sent outside this browser."}
           </p>
         </div>
         {error && (

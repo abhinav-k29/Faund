@@ -14,11 +14,23 @@ assert.equal(manifest.name, "Wilsee");
 assert.equal(manifest.display, "standalone");
 assert(manifest.icons.some((i) => i.sizes === "192x192"));
 assert(manifest.icons.some((i) => i.sizes === "512x512"));
+const iconUrls = await page
+  .locator('link[rel*="icon"]')
+  .evaluateAll((links) => links.map((link) => link.href));
+assert(
+  iconUrls.every((url) => url.includes("/brand/wilsee-original/")),
+  "Browser icons must use the original artwork's own URLs",
+);
+assert(
+  manifest.icons.every((icon) =>
+    icon.src.startsWith("/brand/wilsee-original/"),
+  ),
+);
 await context.setOffline(true);
 await page.reload();
 assert(
   await page
-    .getByRole("button", { name: "Get Started", exact: true })
+    .getByRole("heading", { name: "Hey, Explorer.", exact: true })
     .isVisible(),
 );
 const loaded = await page.evaluate(async () => {
@@ -28,6 +40,17 @@ const loaded = await page.evaluate(async () => {
   return img.naturalWidth > 0;
 });
 assert(loaded);
+for (const url of [...iconUrls, ...manifest.icons.map((icon) => icon.src)]) {
+  assert(
+    await page.evaluate(async (src) => {
+      const image = new Image();
+      image.src = src;
+      await image.decode();
+      return image.naturalWidth > 0;
+    }, url),
+    `Original icon unavailable offline: ${url}`,
+  );
+}
 const cached = await page.evaluate(async () => {
   const urls = [];
   for (const name of await caches.keys()) {
@@ -44,11 +67,12 @@ assert(
   cached.some((u) => u.includes("/sydney-map.svg")),
   "Offline geographic schematic is not cached",
 );
+assert(
+  !cached.some((url) => url.includes("brand-sprout-muted")),
+  "The retired logo must not be precached",
+);
 await context.setOffline(false);
-await page.goto("http://localhost:4173/consent");
-await page.getByRole("checkbox").nth(0).check();
-await page.getByRole("checkbox").nth(1).check();
-await page.getByRole("button", { name: "I Agree — Start Exploring" }).click();
+await page.goto("http://localhost:4173/");
 await page.getByRole("navigation").waitFor();
 await context.setOffline(true);
 await page.goto("http://localhost:4173/map");

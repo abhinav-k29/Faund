@@ -1,3 +1,4 @@
+import { config } from "./config";
 import { useState } from "react";
 import {
   ArrowRight,
@@ -79,7 +80,10 @@ export function ResearchProjects({
             <article className="project-card" key={p.id}>
               <div className="task-card-head">
                 <FlaskConical />
-                <Pill>{p.status} · DEMO PROJECT</Pill>
+                <Pill>
+                  {p.status}
+                  {!config.showcase && " · DEMO PROJECT"}
+                </Pill>
               </div>
               <h2>{p.title}</h2>
               <p>{p.description}</p>
@@ -145,7 +149,9 @@ export function ResearchProjects({
         <p>
           Published tasks are available in the explorer app. Submitted
           observations retain their project and task links. All research
-          projects, access and reviews are local demonstrations.
+          {config.showcase
+            ? "projects use fictional learning records; changes stay in this browser."
+            : "projects, access and reviews are local demonstrations."}
         </p>
       </div>
       {project && (
@@ -445,7 +451,9 @@ export function ResearchProjects({
             </div>
             <Button type="submit">
               {task.status === "Published"
-                ? "Publish Demo Task"
+                ? config.showcase
+                  ? "Publish Task"
+                  : "Publish Demo Task"
                 : "Save Task Draft"}{" "}
               <Check size={17} />
             </Button>

@@ -88,7 +88,7 @@ export function taskProgress(t: Task, s: State) {
 export function claimTaskReward(s: State, id: string): State {
   const task = s.tasks.find((t) => t.id === id && t.status === "Published");
   if (
-    !activeConsent(s) ||
+    (!config.showcase && !activeConsent(s)) ||
     !task ||
     s.claimed.includes(id) ||
     taskProgress(task, s) < 1
@@ -110,8 +110,10 @@ export function validateObservation(
   now = Date.now(),
 ): string | undefined {
   const consent = activeConsent(s);
-  if (!consent || o.consentId !== consent.id)
+  if (!config.showcase && (!consent || o.consentId !== consent.id))
     return "Review the current participation agreement before saving.";
+  if (config.showcase && o.research?.status !== "private")
+    return "New discoveries stay in your private journal. Research sharing is unavailable.";
   if (
     o.speciesId !== null &&
     (!Number.isInteger(o.speciesId) || !species[o.speciesId])
@@ -250,6 +252,8 @@ export function deleteObservation(s: State, id: string): State {
 export const researchScope =
   "Organism photo, identification and uncertainty, observation date/time, location and precision, method, effort, habitat and notes for the local biodiversity research demonstration. Sensitive locations and photos are restricted. No collection, companion or game profile is included.";
 export function canResearchAccess(o: Observation, s: State) {
+  if (config.showcase)
+    return o.synthetic === true && o.research?.status === "illustrative";
   return (
     !!activeConsent(s) &&
     o.research?.status === "submitted" &&
@@ -269,6 +273,10 @@ export function submissionPermission(
   s: State,
   timestamp = new Date().toISOString(),
 ): ResearchPermission {
+  if (config.showcase)
+    throw new Error(
+      "Research sharing is unavailable. This record stays private.",
+    );
   const consent = activeConsent(s);
   if (!consent)
     throw new Error(
@@ -290,6 +298,7 @@ export function submissionPermission(
   };
 }
 export function submitResearch(s: State, id: string): State {
+  if (config.showcase) return s;
   if (!activeConsent(s)) return s;
   return {
     ...s,

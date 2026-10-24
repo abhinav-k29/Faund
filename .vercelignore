@@ -1,0 +1,16 @@
+.git
+.vercel
+.netlify
+.env*
+node_modules
+dist
+.npm-cache
+artifacts
+checkpoints
+presentation-assets
+test-results
+tests
+tools
+docs
+*.zip
+*.tsbuildinfo

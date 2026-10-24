@@ -1,3 +1,4 @@
+import { config } from "./config";
 import {
   ArrowRight,
   Camera,
@@ -41,7 +42,9 @@ export function Scanner() {
     try {
       if (!navigator.mediaDevices?.getUserMedia)
         throw new Error(
-          "Live camera needs HTTPS and browser permission. Upload a photo or choose a demo sample.",
+          config.showcase
+            ? "Live camera needs HTTPS and browser permission. Upload a photo or choose from the field guide."
+            : "Live camera needs HTTPS and browser permission. Upload a photo or choose a demo sample.",
         );
       const s = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
@@ -61,7 +64,9 @@ export function Scanner() {
       setError(
         e instanceof Error
           ? e.message
-          : "Camera unavailable. Try a photo or demo sample.",
+          : config.showcase
+            ? "Camera unavailable. Try a photo or the field guide."
+            : "Camera unavailable. Try a photo or demo sample.",
       );
     } finally {
       if (alive.current && request === cameraSequence.current) setBusy(false);
@@ -84,7 +89,9 @@ export function Scanner() {
     setDraft((d) => ({
       ...d,
       photo: c.toDataURL("image/jpeg", 0.75),
-      provenance: "User photo · simulated identification",
+      provenance: config.showcase
+        ? "Your photograph · manual identification, unverified"
+        : "User photo · simulated identification",
     }));
     stream.current?.getTracks().forEach((t) => t.stop());
     setCamera(false);
@@ -98,13 +105,22 @@ export function Scanner() {
     setBusy(false);
     stream.current?.getTracks().forEach((t) => t.stop());
     setCamera(false);
+    if (config.showcase) {
+      setDraft((d) => ({ ...d, uncertain: false }));
+      n("/identify/" + id);
+      return;
+    }
     setScanning(id);
     setDraft((d) => ({
       ...d,
       uncertain: false,
       provenance: d.photo
-        ? "User photo · simulated identification"
-        : "Demo sample identification",
+        ? config.showcase
+          ? "Your photograph · manual identification, unverified"
+          : "User photo · simulated identification"
+        : config.showcase
+          ? "Field-guide learning entry · unverified"
+          : "Demo sample identification",
     }));
     timer.current = setTimeout(() => n("/identify/" + id), 2200);
   }
@@ -113,7 +129,11 @@ export function Scanner() {
       <Heading
         eyebrow="LOOK A LITTLE CLOSER"
         title="Discover a little wild."
-        sub="Photograph an organism, or try a curated sample."
+        sub={
+          config.showcase
+            ? "Photograph an organism, or explore the field guide."
+            : "Photograph an organism, or try a curated sample."
+        }
         back
       />
       <div
@@ -141,7 +161,9 @@ export function Scanner() {
             ? "CAMERA PREVIEW"
             : draft.photo
               ? "YOUR PHOTO · LOCAL ONLY"
-              : "DEMO PREVIEW · BLUE-BANDED BEE"}
+              : config.showcase
+                ? "FIELD GUIDE · BLUE-BANDED BEE"
+                : "DEMO PREVIEW · BLUE-BANDED BEE"}
         </span>
         <div className="camera-instructions">
           {draft.photo
@@ -150,7 +172,10 @@ export function Scanner() {
         </div>
         {!camera && !draft.photo && (
           <button className="bee-scan-start" onClick={() => analyse(3)}>
-            Analyse Bee Sample · Demo <ArrowRight size={15} />
+            {config.showcase
+              ? "Explore Blue-banded Bee"
+              : "Analyse Bee Sample · Demo"}{" "}
+            <ArrowRight size={15} />
           </button>
         )}
       </div>
@@ -185,9 +210,15 @@ export function Scanner() {
                   setDraft((d) => ({
                     ...d,
                     photo,
-                    provenance: "User photo · simulated identification",
+                    provenance: config.showcase
+                      ? "Your photograph · manual identification, unverified"
+                      : "User photo · simulated identification",
                   }));
-                  toast("Photo saved locally. Choose a demo identification.");
+                  toast(
+                    config.showcase
+                      ? "Photo saved locally. Choose an organism manually or keep it unidentified."
+                      : "Photo saved locally. Choose a demo identification.",
+                  );
                   setError("");
                 } catch (e) {
                   if (alive.current && sequence === uploadSequence.current)
@@ -233,7 +264,9 @@ export function Scanner() {
             setDraft((d) => ({
               ...d,
               uncertain: true,
-              provenance: "Demo sample identification",
+              provenance: config.showcase
+                ? "Field-guide learning entry · unverified"
+                : "Demo sample identification",
             }));
             n("/record/3");
           }}
@@ -242,15 +275,17 @@ export function Scanner() {
       {draft.photo && (
         <div className="notice">
           <p>
-            Your photograph stays attached throughout this journey. Select an
-            explicit demo example below, or keep the identification unconfirmed
-            on the result screen.
+            {config.showcase
+              ? "Your photograph stays attached. Choose an organism manually below, or keep the identification unconfirmed. No image classification is performed."
+              : "Your photograph stays attached throughout this journey. Select an explicit demo example below, or keep the identification unconfirmed on the result screen."}
           </p>
         </div>
       )}
       <div className="section-title">
-        <h2>Try a sample discovery</h2>
-        <Pill>DEMO</Pill>
+        <h2>
+          {config.showcase ? "Choose an organism" : "Try a sample discovery"}
+        </h2>
+        <Pill>{config.showcase ? "FIELD GUIDE" : "DEMO"}</Pill>
       </div>
       <p className="muted">
         No identification model is connected. Select an example to experience
@@ -292,7 +327,9 @@ export function Identify() {
   return (
     <>
       <Heading
-        eyebrow="DEMO IDENTIFICATION"
+        eyebrow={
+          config.showcase ? "MANUAL IDENTIFICATION" : "DEMO IDENTIFICATION"
+        }
         title="Well, look what you found."
         back
       />
@@ -306,15 +343,22 @@ export function Identify() {
         ) : (
           <Photo id={s.id} />
         )}
-        <Pill>Possible Match Found</Pill>
+        <Pill>
+          {config.showcase
+            ? "Your selected organism · unverified"
+            : "Possible Match Found"}
+        </Pill>
       </div>
-      <p className="eyebrow top-space">SUGGESTED IDENTIFICATION</p>
+      <p className="eyebrow top-space">
+        {config.showcase ? "SELECTED ORGANISM" : "SUGGESTED IDENTIFICATION"}
+      </p>
       <h1>{s.name}</h1>
       <p className="latin">{s.latin}</p>
       <Pill>{s.category}</Pill>
       <p>
-        Take a closer look at the colours and markings. This is a selected demo
-        suggestion, not an AI result or expert verification.
+        {config.showcase
+          ? "Compare the colours and markings with the field guide. You selected this organism manually. Its identification is unverified."
+          : "Take a closer look at the colours and markings. This is a selected demo suggestion, not an AI result or expert verification."}
       </p>
       {s.id === 3 && (
         <div className="identification-features">
@@ -357,7 +401,11 @@ export function Identify() {
       </button>
       {matches && (
         <Modal
-          title="Choose a demo alternative"
+          title={
+            config.showcase
+              ? "Choose another organism"
+              : "Choose a demo alternative"
+          }
           onClose={() => setMatches(false)}
         >
           <p>These are selectable examples, not ranked visual matches.</p>

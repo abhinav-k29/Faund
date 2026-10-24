@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { PrivacySettings } from "./privacy-settings";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -374,7 +375,9 @@ export function Profile() {
         <div className="profile-avatar">
           <UserRound size={42} />
         </div>
-        <Pill>ADULT DEMONSTRATION PROFILE</Pill>
+        <Pill>
+          {config.showcase ? "NATURE SCOUT" : "ADULT DEMONSTRATION PROFILE"}
+        </Pill>
         <h2>Level {1 + Math.floor(state.xp / 100)}</h2>
         <p>
           {state.xp} XP · {100 - (state.xp % 100)} XP to your next level
@@ -434,122 +437,129 @@ export function Profile() {
           </div>
         ))}
       </div>
-      <div className="section-title">
-        <h2>Privacy & participation</h2>
-        <ShieldCheck size={20} />
-      </div>
-      <div className="settings">
-        <p>
-          <Lock size={17} /> Collections and observation history are private.
-        </p>
-        <p>
-          <FlaskConical size={17} /> Research submissions need a separate,
-          informed confirmation.
-        </p>
-        <p>
-          <MapPin size={17} /> No background tracking or public coordinates.
-        </p>
-        <p>
-          <ShieldCheck size={17} /> All demo data stays in this browser.
-        </p>
-      </div>
-      <details>
-        <summary>Review your participation agreement</summary>
-        <p>
-          Consent version {c?.version} · recorded{" "}
-          {c ? new Date(c.timestamp).toLocaleString("en-AU") : ""}
-        </p>
-        <p>{c?.scope}</p>
-        <p>
-          Correct records in My Contributions. Withdraw below to stop future
-          participation. Production withdrawal follows project retention
-          arrangements and cannot automatically recall data already lawfully
-          used in completed research.
-        </p>
-        <Link className="text-link" to="/consent">
-          Read complete explanation <ArrowRight size={16} />
-        </Link>
-      </details>
-      <Button secondary onClick={() => setConfirm("withdraw")}>
-        Withdraw from Future Participation
-      </Button>
-      <div className="section-title">
-        <h2>Presentation controls</h2>
-        <SlidersHorizontal size={20} />
-      </div>
-      <p className="muted">
-        Current mode: {state.mode}. Demo Explorer replaces observations with
-        labelled sample records. Consent remains your explicit decision.
-      </p>
-      <Button onClick={() => setConfirm("demo")}>Load Demo Explorer</Button>
-      <Button secondary onClick={() => setConfirm("reset")}>
-        Fresh Explorer · Reset Demo
-      </Button>
-      <Link className="inline-card" to="/researcher-demo">
-        <FlaskConical /> Researcher Demonstration <ArrowUpRight />
-      </Link>
-      <Link className="text-link" to="/credits">
-        Photography credits &amp; licences <ArrowUpRight size={15} />
-      </Link>
-      <Link className="inline-card" to="/showcase">
-        <Layers /> Presentation Showcase <ArrowUpRight />
-      </Link>
-      {confirm && (
-        <Modal
-          title={
-            confirm === "withdraw"
-              ? "Withdraw participation?"
-              : confirm === "demo"
-                ? "Load sample explorer?"
-                : "Start a fresh adventure?"
-          }
-          onClose={() => setConfirm("")}
-        >
-          <p>
-            {confirm === "withdraw"
-              ? "This stops further participation, closes the observation app and removes records from research views. Your private journal is retained. You can delete local data from the agreement screen without accepting again. No data has been sent outside this prototype."
-              : confirm === "demo"
-                ? "This replaces local observation progress with labelled samples and a populated ecosystem. Your consent is preserved."
-                : "This deletes all local observations, photographs, consent records and game progress, then returns to the welcome screen."}
+      {config.showcase ? (
+        <PrivacySettings />
+      ) : (
+        <>
+          <div className="section-title">
+            <h2>Privacy & participation</h2>
+            <ShieldCheck size={20} />
+          </div>
+          <div className="settings">
+            <p>
+              <Lock size={17} /> Collections and observation history are
+              private.
+            </p>
+            <p>
+              <FlaskConical size={17} /> Research submissions need a separate,
+              informed confirmation.
+            </p>
+            <p>
+              <MapPin size={17} /> No background tracking or public coordinates.
+            </p>
+            <p>
+              <ShieldCheck size={17} /> All demo data stays in this browser.
+            </p>
+          </div>
+          <details>
+            <summary>Review your participation agreement</summary>
+            <p>
+              Consent version {c?.version} · recorded{" "}
+              {c ? new Date(c.timestamp).toLocaleString("en-AU") : ""}
+            </p>
+            <p>{c?.scope}</p>
+            <p>
+              Correct records in My Contributions. Withdraw below to stop future
+              participation. Production withdrawal follows project retention
+              arrangements and cannot automatically recall data already lawfully
+              used in completed research.
+            </p>
+            <Link className="text-link" to="/consent">
+              Read complete explanation <ArrowRight size={16} />
+            </Link>
+          </details>
+          <Button secondary onClick={() => setConfirm("withdraw")}>
+            Withdraw from Future Participation
+          </Button>
+          <div className="section-title">
+            <h2>Presentation controls</h2>
+            <SlidersHorizontal size={20} />
+          </div>
+          <p className="muted">
+            Current mode: {state.mode}. Demo Explorer replaces observations with
+            labelled sample records. Consent remains your explicit decision.
           </p>
-          <Button
-            onClick={() => {
-              if (confirm === "withdraw") {
-                setState((s) => ({
-                  ...s,
-                  consents: s.consents.map((x) =>
-                    x.id === c?.id
-                      ? { ...x, withdrawnAt: new Date().toISOString() }
-                      : x,
-                  ),
-                }));
-                n("/consent");
-                toast(
-                  "Participation withdrawn. Future observation saving is blocked.",
-                );
-              } else if (confirm === "demo") {
-                setState(seedState(state));
-                toast("Labelled sample explorer loaded.");
-              } else {
-                sessionStorage.removeItem(draftKey);
-                const cleared = emptyState("fresh");
-                repository.save(cleared);
-                setState(cleared);
-                window.location.assign("/");
+          <Button onClick={() => setConfirm("demo")}>Load Demo Explorer</Button>
+          <Button secondary onClick={() => setConfirm("reset")}>
+            Fresh Explorer · Reset Demo
+          </Button>
+          <Link className="inline-card" to="/researcher-demo">
+            <FlaskConical /> Researcher Demonstration <ArrowUpRight />
+          </Link>
+          <Link className="text-link" to="/credits">
+            Photography credits &amp; licences <ArrowUpRight size={15} />
+          </Link>
+          <Link className="inline-card" to="/showcase">
+            <Layers /> Presentation Showcase <ArrowUpRight />
+          </Link>
+          {confirm && (
+            <Modal
+              title={
+                confirm === "withdraw"
+                  ? "Withdraw participation?"
+                  : confirm === "demo"
+                    ? "Load sample explorer?"
+                    : "Start a fresh adventure?"
               }
-              setConfirm("");
-            }}
-          >
-            {confirm === "withdraw"
-              ? "Withdraw"
-              : confirm === "demo"
-                ? "Load Demo Records"
-                : "Reset Local Data"}
-          </Button>
-          <Button secondary onClick={() => setConfirm("")}>
-            Cancel
-          </Button>
-        </Modal>
+              onClose={() => setConfirm("")}
+            >
+              <p>
+                {confirm === "withdraw"
+                  ? "This stops further participation, closes the observation app and removes records from research views. Your private journal is retained. You can delete local data from the agreement screen without accepting again. No data has been sent outside this prototype."
+                  : confirm === "demo"
+                    ? "This replaces local observation progress with labelled samples and a populated ecosystem. Your consent is preserved."
+                    : "This deletes all local observations, photographs, consent records and game progress, then returns to the welcome screen."}
+              </p>
+              <Button
+                onClick={() => {
+                  if (confirm === "withdraw") {
+                    setState((s) => ({
+                      ...s,
+                      consents: s.consents.map((x) =>
+                        x.id === c?.id
+                          ? { ...x, withdrawnAt: new Date().toISOString() }
+                          : x,
+                      ),
+                    }));
+                    n("/consent");
+                    toast(
+                      "Participation withdrawn. Future observation saving is blocked.",
+                    );
+                  } else if (confirm === "demo") {
+                    setState(seedState(state));
+                    toast("Labelled sample explorer loaded.");
+                  } else {
+                    sessionStorage.removeItem(draftKey);
+                    const cleared = emptyState("fresh");
+                    repository.save(cleared);
+                    setState(cleared);
+                    window.location.assign("/");
+                  }
+                  setConfirm("");
+                }}
+              >
+                {confirm === "withdraw"
+                  ? "Withdraw"
+                  : confirm === "demo"
+                    ? "Load Demo Records"
+                    : "Reset Local Data"}
+              </Button>
+              <Button secondary onClick={() => setConfirm("")}>
+                Cancel
+              </Button>
+            </Modal>
+          )}
+        </>
       )}
     </>
   );

@@ -1,3 +1,4 @@
+import { config } from "./config";
 import { ChevronRight, FlaskConical, Leaf, RefreshCw } from "lucide-react";
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -11,6 +12,12 @@ import {
   deleteObservation,
 } from "./store";
 import { Button, Heading, Modal, Photo, Pill, dateLabel } from "./ui";
+const identificationLabel = (value: string) =>
+  config.showcase && value === "User-confirmed demo identification"
+    ? "Manual identification · unverified"
+    : value;
+const reviewLabel = (value: string) =>
+  config.showcase && value === "Demo reviewed" ? "Details checked" : value;
 export function ObservationDetails({
   o,
   research = false,
@@ -50,7 +57,7 @@ export function ObservationDetails({
       ) : s ? (
         <Photo id={s.id} className="detail-photo" />
       ) : null}
-      <Pill>{o.review}</Pill>
+      <Pill>{reviewLabel(o.review)}</Pill>
       {!!o.missingFields?.length && (
         <p className="notice">
           Some metadata was not recorded in this older observation. Missing
@@ -61,7 +68,10 @@ export function ObservationDetails({
       <dl className="metadata">
         {[
           ["Record ID", o.id],
-          ["Contributor", o.contributor],
+          [
+            "Contributor",
+            config.showcase ? "Your local journal" : o.contributor,
+          ],
           ["Observed", new Date(o.observedAt).toLocaleString("en-AU")],
           [
             "Created",
@@ -103,7 +113,7 @@ export function ObservationDetails({
           ["Habitat", o.habitat],
           ["Activity", o.activity || "Not recorded"],
           ["Weather", o.weather || "Not recorded"],
-          ["Identification", o.identification],
+          ["Identification", identificationLabel(o.identification)],
           ["Task", task?.title || "Casual observation"],
           [
             "Project",
@@ -143,37 +153,40 @@ export function ObservationDetails({
       {research ? (
         <>
           <label>
-            Internal demo review notes
+            {config.showcase ? "Review notes" : "Internal demo review notes"}
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
           </label>
           <div className="button-row">
-            {["Demo reviewed", "Needs clarification", "Awaiting review"].map(
-              (status) => (
-                <Button
-                  key={status}
-                  secondary
-                  onClick={() => {
-                    setState((s) => ({
-                      ...s,
-                      observations: s.observations.map((x) =>
-                        x.id === o.id
-                          ? { ...x, review: status, reviewNotes: notes }
-                          : x,
-                      ),
-                    }));
-                    toast(
-                      "Local demo review saved. No expert verification asserted.",
-                    );
-                    onClose();
-                  }}
-                >
-                  {status}
-                </Button>
-              ),
-            )}
+            {(config.showcase
+              ? ["Details checked", "Needs clarification", "Unverified"]
+              : ["Demo reviewed", "Needs clarification", "Awaiting review"]
+            ).map((status) => (
+              <Button
+                key={status}
+                secondary
+                onClick={() => {
+                  setState((s) => ({
+                    ...s,
+                    observations: s.observations.map((x) =>
+                      x.id === o.id
+                        ? { ...x, review: status, reviewNotes: notes }
+                        : x,
+                    ),
+                  }));
+                  toast(
+                    config.showcase
+                      ? "Review notes saved locally. Identification remains unverified."
+                      : "Local demo review saved. No expert verification asserted.",
+                  );
+                  onClose();
+                }}
+              >
+                {status}
+              </Button>
+            ))}
           </div>
           <Button secondary onClick={() => setConfirmDelete(true)}>
             Delete Local Record
@@ -244,8 +257,9 @@ export function ObservationDetails({
         </section>
       )}
       <p className="footnote">
-        Local demonstration · no external transmission or scientific
-        verification.
+        {config.showcase
+          ? "Kept on this browser. No external submission or scientific verification."
+          : "Local demonstration · no external transmission or scientific verification."}
       </p>
     </Modal>
   );
@@ -293,10 +307,9 @@ export function Contributions() {
       <div className="notice">
         <FlaskConical />
         <p>
-          {authorisedObservations(state).length} explicitly permitted records
-          appear in the local research demonstration. Your other observations
-          stay in your private journal. No scientific validation or external
-          transmission is implied.
+          {config.showcase
+            ? "Your observations stay private. Starting journal entries are fictional learning records; no records are sent to researchers."
+            : `${authorisedObservations(state).length} explicitly permitted records appear in the local research demonstration. Your other observations stay in your private journal. No scientific validation or external transmission is implied.`}
         </p>
       </div>
       <div className="observations-list">
@@ -329,12 +342,14 @@ export function Contributions() {
                   {o.sensitive ? "Restricted site" : o.location}
                 </p>
                 <small>
-                  {o.identification} ·{" "}
-                  {o.research?.status === "submitted"
-                    ? o.review
-                    : o.research?.status === "withdrawn"
-                      ? "Research permission withdrawn"
-                      : "Private · not submitted"}
+                  {identificationLabel(o.identification)} ·{" "}
+                  {o.research?.status === "illustrative"
+                    ? "Learning record · " + o.review
+                    : o.research?.status === "submitted"
+                      ? reviewLabel(o.review)
+                      : o.research?.status === "withdrawn"
+                        ? "Research permission withdrawn"
+                        : "Private · not submitted"}
                 </small>
               </div>
               <ChevronRight size={18} />

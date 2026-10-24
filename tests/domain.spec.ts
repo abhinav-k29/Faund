@@ -18,11 +18,57 @@ import {
   csvText,
   migrateState,
   repository,
+  returningState,
+  prepareShowcaseState,
   type Observation,
   type State,
 } from "../src/store";
 import { config } from "../src/config";
 const fresh = () => ({ ...emptyState("fresh"), consents: [makeConsent(true)] });
+test("returning profile has coherent progress without inventing consent or submissions", () => {
+  const s = returningState();
+  expect(s.consents).toEqual([]);
+  expect(activeConsent(s)).toBeUndefined();
+  expect(s.observations).toHaveLength(24);
+  expect(speciesIds(s)).toHaveLength(6);
+  expect(s.xp).toBe(640);
+  expect(s.game.availableGrowthXP).toBe(180);
+  expect(s.game.activeCompanionId).toBe(3);
+  expect(
+    s.observations.every(
+      (o) =>
+        o.synthetic &&
+        !o.consentId &&
+        !o.research?.receiptId &&
+        o.research?.status !== "submitted",
+    ),
+  ).toBe(true);
+  expect(
+    s.observations.filter((o) => o.research?.status === "illustrative"),
+  ).toHaveLength(23);
+  expect(csvText(s.observations)).toContain(
+    "not a verified occurrence or research submission",
+  );
+});
+test("public migration keeps existing discoveries, consent and all earned progression", () => {
+  const legacy = seedState(fresh());
+  const privateRecord = {
+    ...legacy.observations[0],
+    id: "private-user-record",
+    photo: "data:image/jpeg;base64,kept",
+    research: { status: "private" as const },
+  };
+  legacy.observations.push(privateRecord);
+  legacy.xp = 1111;
+  legacy.game.availableGrowthXP = 43;
+  const migrated = prepareShowcaseState(legacy);
+  expect(migrated.xp).toBe(1111);
+  expect(migrated.game).toEqual(legacy.game);
+  expect(migrated.consents).toEqual(legacy.consents);
+  expect(migrated.claimed).toEqual(legacy.claimed);
+  expect(migrated.observations.at(-1)).toEqual(privateRecord);
+  expect(prepareShowcaseState(migrated)).toEqual(migrated);
+});
 const record = (s: State, changes: Partial<Observation> = {}): Observation => ({
   id: "event-1",
   contributor: config.participantId,

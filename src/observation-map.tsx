@@ -1,3 +1,4 @@
+import { config } from "./config";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import L from "leaflet";
@@ -523,8 +524,8 @@ export function DiscoveryMap() {
         <RefreshCw /> Observe Again · visit timelines <ChevronRight />
       </Link>
       <p className="footnote">
-        Sample pins are fictional records at plausible public areas. This map is
-        private to your local browser.
+        Starting journal pins are fictional learning records at public areas.
+        This map is private to your local browser.
       </p>
       {chosen && (
         <Modal title={chosen.label} onClose={() => setSelected("")}>
@@ -560,7 +561,9 @@ export function DiscoveryMap() {
                 <div>
                   <span className="eyebrow">
                     {o.provenance.includes("Seeded")
-                      ? "FICTIONAL DEMO OBSERVATION"
+                      ? config.showcase
+                        ? "LEARNING RECORD · FICTIONAL"
+                        : "FICTIONAL DEMO OBSERVATION"
                       : "LOCAL OBSERVATION"}
                   </span>
                   <h3>

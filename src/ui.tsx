@@ -103,7 +103,7 @@ export function Credits() {
             Original image & attribution
           </a>
           <p className="footnote">
-            Resized and recompressed for this prototype.
+            Resized and recompressed for Wilsee.
             {i === 5
               ? " Reference image depicts Eucalyptus globulus subsp. maidenii; it is not an identification of a captured tree."
               : ""}
@@ -112,20 +112,24 @@ export function Credits() {
       ))}
       <p className="footnote">
         Outfit and Fraunces fonts use the SIL Open Font License. Companion and
-        habitat illustrations are original SVG artwork created for this
-        prototype.
+        habitat illustrations are original SVG artwork created for this Wilsee.
       </p>
     </>
   );
 }
 export function Logo() {
   return (
-    <Link className="logo" to="/home">
+    <Link className="logo" to={config.homePath}>
       <span>
-        <img src="/icon.svg" alt="" width="32" height="32" />
+        <img
+          src="/brand/wilsee-original/logo-2f0837113f.png"
+          alt=""
+          width="44"
+          height="44"
+        />
       </span>
       {config.name}
-      <i>PROTOTYPE</i>
+      {!config.showcase && <i>PROTOTYPE</i>}
     </Link>
   );
 }
@@ -287,7 +291,7 @@ export async function readPhoto(file: File): Promise<string> {
     const ctx = c.getContext("2d");
     if (!ctx)
       throw new Error(
-        "Image processing is unavailable in this browser. Try a demo sample.",
+        "Image processing is unavailable in this browser. Try a field-guide image.",
       );
     ctx.drawImage(img, 0, 0, c.width, c.height);
     return c.toDataURL("image/jpeg", 0.78);

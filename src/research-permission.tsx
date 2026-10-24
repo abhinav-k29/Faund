@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { config } from "./config";
 import { ShieldCheck, Lock, FlaskConical, Check } from "lucide-react";
 import { useApp } from "./context";
 import {
@@ -19,6 +20,22 @@ export function ResearchPermissionPanel({
   const [agree, setAgree] = useState(false);
   const [withdraw, setWithdraw] = useState(false);
   const submitted = canResearchAccess(o, state);
+  if (config.showcase)
+    return (
+      <section
+        className="research-permission-panel"
+        aria-label="Observation privacy"
+      >
+        <h3>
+          {o.synthetic ? "About this learning record" : "Private observation"}
+        </h3>
+        <p>
+          {o.synthetic
+            ? "This is a fictional, unverified learning record. It does not establish a real species occurrence or a research submission."
+            : "This entry and its photograph stay in this browser. Research sharing is unavailable, and Community Worlds cannot access your observations."}
+        </p>
+      </section>
+    );
   return (
     <section
       className="research-permission-panel"
